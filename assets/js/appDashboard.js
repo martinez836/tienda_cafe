@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             // Actualizar gráfica de Ventas Diarias
                             const ventasDiarias = dashboardData.ventasDiarias ?? { labels: [], data: [] }; 
-                            createOrUpdateVentasDiariasChart(ventasDiarias.labels ?? [], ventasDiarias.data ?? []);
+                            createOrUpdateVentasDiariasChart(ventasDiariasCtx, ventasDiarias.labels ?? [], ventasDiarias.data ?? []);
 
                             // Actualizar últimos pedidos
                             const ultimosPedidosList = document.querySelector('#ultimosPedidosList');

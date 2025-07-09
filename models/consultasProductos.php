@@ -133,6 +133,26 @@ class ConsultasProductos
             throw new Exception('Error al obtener resumen de stock: ' . $e->getMessage());
         }
     }
+
+    public function getEstadisticasPorCategoria() {
+        try {
+            $sql = "SELECT 
+                        categorias.nombre_categoria,
+                        COUNT(productos.idproductos) as total_productos,
+                        COUNT(CASE WHEN productos.stock_producto IS NOT NULL AND productos.stock_producto > 0 THEN 1 END) as con_stock,
+                        COUNT(CASE WHEN productos.stock_producto IS NOT NULL AND productos.stock_producto <= 10 AND productos.stock_producto > 0 THEN 1 END) as bajo_stock,
+                        COUNT(CASE WHEN productos.stock_producto IS NULL OR productos.stock_producto = 0 THEN 1 END) as sin_stock,
+                        SUM(CASE WHEN productos.stock_producto IS NOT NULL THEN productos.stock_producto ELSE 0 END) as stock_total
+                    FROM productos 
+                    LEFT JOIN categorias ON productos.fk_categoria = categorias.idcategorias
+                    WHERE productos.estados_idestados = 1
+                    GROUP BY categorias.idcategorias, categorias.nombre_categoria
+                    ORDER BY categorias.nombre_categoria";
+            return $this->mysql->efectuarConsulta($sql);
+        } catch (Exception $e) {
+            throw new Exception('Error al obtener estadísticas por categoría: ' . $e->getMessage());
+        }
+    }
 }
 
 ?>
