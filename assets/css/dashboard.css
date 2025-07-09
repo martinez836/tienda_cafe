@@ -1,0 +1,87 @@
+body {
+    background-color: #f8f9fa;
+}
+.sidebar, .offcanvas.offcanvas-start .offcanvas-body {
+    width: 250px;
+    background-color: #343a40 !important;
+    color: white;
+    padding-top: 56px;
+    position: static;
+    height: auto;
+    z-index: 1045;
+}
+@media (min-width: 992px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+    }
+    .content {
+        margin-left: 250px !important;
+    }
+}
+@media (max-width: 991.98px) {
+    .sidebar {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1045;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .offcanvas.offcanvas-start {
+        width: 80vw !important;
+        min-width: 220px;
+        max-width: 400px;
+        background-color: #343a40 !important;
+        color: white;
+    }
+    .offcanvas.offcanvas-start .offcanvas-body {
+        padding: 0;
+    }
+}
+.offcanvas.offcanvas-start {
+    background-color: #343a40 !important;
+    color: white;
+}
+.sidebar .nav-link, .offcanvas.offcanvas-start .offcanvas-body .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+    padding: 10px 15px;
+}
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link.active,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link:hover {
+    color: white;
+    background-color: #495057;
+}
+.content {
+    padding: 20px;
+    margin-left: 0;
+}
+.navbar {
+    background-color: #B49375 !important; /* Color de café */
+}
+.navbar-brand {
+    color: white !important;
+}
+.card-header {
+    background-color: #B49375;
+    color: white;
+}
+.offcanvas.offcanvas-start .offcanvas-header {
+    background-color: #343a40 !important;
+    color: white !important;
+    border-bottom: 1px solid #23272b;
+}
+.offcanvas.offcanvas-start .offcanvas-title,
+.offcanvas.offcanvas-start .btn-close {
+    color: white !important;
+    filter: invert(1) grayscale(1) brightness(2);
+}

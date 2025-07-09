@@ -1,0 +1,161 @@
+body {
+    background-color: #F8F4ED; /* Un tono crema muy suave */
+}
+
+.header {
+    background-color: #B59374; /* Un tono marrón claro para el encabezado */
+    color: #FFFFFF;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.coffee-icon {
+    color: #8B5E3C; /* Un marrón más oscuro para el icono del café */
+    font-size: 2.5rem;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+h1 {
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+p {
+    color: #F8F4ED;
+}
+
+#PedidosPendientes p {
+    color: #8B5E3C; /* Asegura que solo los párrafos dentro de #PedidosPendientes tengan este color */
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    background-color: #D4C1A5; /* Un tono intermedio entre el crema y el marrón */
+    color: #8B5E3C; /* Texto en marrón oscuro para los encabezados de tarjeta */
+    font-weight: bold;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-body {
+    padding: 25px;
+}
+
+.empty-state {
+    color: #8B5E3C; /* Cambiado a un marrón más oscuro para mayor visibilidad */
+}
+
+.empty-state i {
+    color: #D4C1A5; /* Iconos de estado vacío en el tono intermedio */
+}
+
+.list-group-item {
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.order-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.order-item:hover {
+    background-color: #F0EDE8;
+}
+
+.order-item.selected {
+    background-color: #E2D9CD;
+    border-left: 5px solid #8B5E3C;
+}
+
+.badge-status {
+    padding: 0.5em 0.7em;
+    border-radius: 0.5rem;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.badge-pending {
+    background-color: #ffc107;
+    color: #343a40;
+}
+
+.badge-preparing {
+    background-color: #0dcaf0;
+    color: #FFFFFF;
+}
+
+.badge-ready {
+    background-color: #28a745;
+    color: #FFFFFF;
+}
+
+.btn-primary {
+    background-color: #8B5E3C;
+    border-color: #8B5E3C;
+}
+
+.btn-primary:hover {
+    background-color: #6A482F;
+    border-color: #6A482F;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+} 
+@media (max-width: 991.98px) {
+    .sidebar {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1045;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .offcanvas.offcanvas-start {
+        width: 80vw !important;
+        min-width: 220px;
+        max-width: 400px;
+        background-color: #343a40 !important;
+        color: white;
+    }
+    .offcanvas.offcanvas-start .offcanvas-body {
+        padding: 0;
+    }
+}
+.offcanvas.offcanvas-start {
+    background-color: #343a40 !important;
+    color: white;
+}
+.sidebar .nav-link, .offcanvas.offcanvas-start .offcanvas-body .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+    padding: 10px 15px;
+}
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link.active,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link:hover {
+    color: white;
+    background-color: #495057;
+} 
