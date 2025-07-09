@@ -1,0 +1,221 @@
+:root {
+            --coffee-primary: #B8956A;
+            --coffee-secondary: #D4C4A8;
+            --coffee-dark: #8B7355;
+            --coffee-light: #F5F1EB;
+            --coffee-accent: #A0845C;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--coffee-light) 0%, #EAE2D6 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-dark) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .coffee-icon {
+            font-size: 2rem;
+            margin-right: 0.5rem;
+            color: #FFE4B5;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: var(--coffee-secondary);
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1rem 1.5rem;
+            color: var(--coffee-dark);
+            font-weight: 600;
+        }
+
+        .btn-coffee {
+            background: linear-gradient(135deg, var(--coffee-primary) 0%, var(--coffee-dark) 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(184, 149, 106, 0.3);
+        }
+
+        .btn-coffee:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(184, 149, 106, 0.4);
+            color: white;
+        }
+
+        .btn-coffee:active {
+            transform: translateY(0);
+        }
+
+        .btn-success-coffee {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-success-coffee:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+
+        .order-item {
+            background: var(--coffee-light);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--coffee-primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .order-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-item.selected {
+            background: var(--coffee-secondary);
+            border-left-color: var(--coffee-dark);
+            box-shadow: 0 4px 15px rgba(184, 149, 106, 0.2);
+        }
+
+        .order-number {
+            background: var(--coffee-primary);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            border: 2px solid #E8E8E8;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--coffee-primary);
+            box-shadow: 0 0 0 0.2rem rgba(184, 149, 106, 0.25);
+        }
+
+        .payment-summary {
+            background: linear-gradient(135deg, var(--coffee-light) 0%, var(--coffee-secondary) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .amount-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--coffee-dark);
+        }
+
+        .change-display {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--coffee-secondary);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .coffee-icon {
+                font-size: 1.5rem;
+            }
+
+            .amount-display {
+                font-size: 1.25rem;
+            }
+
+            .change-display {
+                font-size: 1.1rem;
+            }
+        }
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1045;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .offcanvas.offcanvas-start {
+        width: 80vw !important;
+        min-width: 220px;
+        max-width: 400px;
+        background-color: #343a40 !important;
+        color: white;
+    }
+    .offcanvas.offcanvas-start .offcanvas-body {
+        padding: 0;
+    }
+}
+.offcanvas.offcanvas-start {
+    background-color: #343a40 !important;
+    color: white;
+}
+.sidebar .nav-link, .offcanvas.offcanvas-start .offcanvas-body .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+    padding: 10px 15px;
+}
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link.active,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link:hover {
+    color: white;
+    background-color: #495057;
+}

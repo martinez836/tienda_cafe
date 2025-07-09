@@ -1,0 +1,79 @@
+body {
+    background-color: #f8f9fa;
+}
+.sidebar, .offcanvas.offcanvas-start .offcanvas-body {
+    background-color: #343a40 !important;
+    color: white;
+}
+.sidebar .nav-link, .offcanvas.offcanvas-start .offcanvas-body .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link.active,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link:hover {
+    color: white;
+    background-color: #495057;
+}
+.content {
+    margin-left: 250px;
+    padding: 20px;
+}
+.navbar {
+    background-color: #B49375 !important; /* Color de café */
+}
+.navbar-brand {
+    color: white !important;
+}
+.card-header {
+    background-color: #B49375;
+    color: white;
+}
+.offcanvas.offcanvas-start .offcanvas-header {
+    background-color: #343a40 !important;
+    color: white !important;
+    border-bottom: 1px solid #23272b;
+}
+.offcanvas.offcanvas-start .offcanvas-title,
+.offcanvas.offcanvas-start .btn-close {
+    color: white !important;
+    filter: invert(1) grayscale(1) brightness(2);
+}
+.select-rol {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background-color: #fff;
+    color: #212529;
+    font-weight: 400;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    padding: 0.375rem 0.75rem;
+    height: calc(2.25rem + 2px);
+}
+.select-rol:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+@media (min-width: 992px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        z-index: 1045;
+        background-color: #343a40 !important;
+        color: white;
+        padding-top: 56px;
+    }
+    .content {
+        margin-left: 250px !important;
+    }
+}
+@media (max-width: 991.98px) {
+    .sidebar {
+        display: none !important;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+}

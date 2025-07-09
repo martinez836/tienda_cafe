@@ -1,0 +1,121 @@
+/* Estilos para las notificaciones de stock */
+
+#notificacionesStock {
+    pointer-events: none;
+}
+
+#notificacionesStock .alert {
+    pointer-events: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 8px;
+    animation: slideInRight 0.3s ease-out;
+}
+
+#notificacionesStock .alert-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+#notificacionesStock .alert-warning {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
+
+#notificacionesStock .alert .btn-close {
+    filter: invert(1);
+}
+
+#notificacionesStock .alert-warning .btn-close {
+    filter: none;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Estilos para el modal de detalles */
+#modalDetallesStock .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#modalDetallesStock .modal-header {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+#modalDetallesStock .table {
+    margin-bottom: 0;
+}
+
+#modalDetallesStock .table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+#modalDetallesStock .table-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+#modalDetallesStock .table-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Estilos para las alertas en el dashboard */
+#alertasStock .card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+#alertasStock .alert {
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 0;
+}
+
+#alertasStock .badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
+}
+
+/* Animaciones para las alertas */
+.alert {
+    transition: all 0.3s ease;
+}
+
+.alert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    #notificacionesStock {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        padding: 10px !important;
+    }
+    
+    #notificacionesStock .alert {
+        min-width: auto !important;
+        max-width: none !important;
+        margin-bottom: 10px !important;
+    }
+    
+    #modalDetallesStock .modal-dialog {
+        margin: 10px;
+    }
+} 

@@ -1,0 +1,54 @@
+body {
+    background-color: #f8f9fa;
+}
+.sidebar, .offcanvas.offcanvas-start .offcanvas-body {
+    background-color: #343a40 !important;
+    color: white;
+}
+.sidebar .nav-link, .offcanvas.offcanvas-start .offcanvas-body .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link.active,
+.offcanvas.offcanvas-start .offcanvas-body .nav-link:hover {
+    color: white;
+    background-color: #495057;
+}
+.content {
+    margin-left: 250px;
+    padding: 20px;
+}
+.navbar {
+    background-color: #B49375 !important; /* Color de café */
+}
+.navbar-brand {
+    color: white !important;
+}
+.card-header {
+    background-color: #B49375;
+    color: white;
+}
+@media (min-width: 992px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        z-index: 1045;
+        background-color: #343a40 !important;
+        color: white;
+        padding-top: 56px;
+    }
+    .content {
+        margin-left: 250px !important;
+    }
+}
+@media (max-width: 991.98px) {
+    .sidebar {
+        display: none !important;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+}
