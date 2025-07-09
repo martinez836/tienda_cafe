@@ -223,4 +223,95 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos iniciales
     cargarCategorias();
     cargarProductos();
+
+    // Evento para generar reporte PDF
+    const botonGenerarReporte = document.getElementById('generarReporteBtn');
+    if (botonGenerarReporte) {
+        botonGenerarReporte.addEventListener('click', () => {
+            Swal.fire({
+                title: 'Generando Reporte',
+                text: 'El reporte se está generando, por favor espere...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Generar el reporte
+            fetch('../../controllers/admin/reporteInventario.php')
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.success) {
+                        Swal.fire({
+                            title: '¡Reporte Generado!',
+                            text: 'El reporte se ha generado exitosamente',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: 'Descargar',
+                            cancelButtonText: 'Cerrar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Descargar el archivo
+                                window.open('../../controllers/admin/descargarReporte.php?filename=' + data.filename, '_blank');
+                            }
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'Error al generar el reporte', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    Swal.fire('Error', 'Error al generar el reporte: ' + error.message, 'error');
+                });
+        });
+    }
+
+    // Evento para ver historial de reportes
+    const botonVerHistorial = document.getElementById('verHistorialBtn');
+    if (botonVerHistorial) {
+        botonVerHistorial.addEventListener('click', () => {
+            cargarHistorialReportes();
+            const modalHistorial = new bootstrap.Modal(document.getElementById('historialModal'));
+            modalHistorial.show();
+        });
+    }
+
+    // Función para cargar historial de reportes
+    function cargarHistorialReportes() {
+        fetch('../../controllers/admin/listarReportes.php')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('historialTableBody');
+                tbody.innerHTML = '';
+                
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(reporte => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${reporte.filename}</td>
+                            <td>${reporte.created}</td>
+                            <td>${reporte.size_formatted}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="descargarReporte('${reporte.filename}')">
+                                    <i class="fas fa-download"></i> Descargar
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay reportes generados</td></tr>';
+                }
+            })
+            .catch(error => {
+                const tbody = document.getElementById('historialTableBody');
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar el historial</td></tr>';
+            });
+    }
+
+    // Función global para descargar reporte
+    window.descargarReporte = function(filename) {
+        window.open('../../controllers/admin/descargarReporte.php?filename=' + filename, '_blank');
+    };
 });
