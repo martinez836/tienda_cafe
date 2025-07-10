@@ -1,8 +1,6 @@
 <?php
 require_once '../models/consultas.php';
-require_once '../config/config.php';
 header('Content-Type: application/json');
-
 try {
     $consultas = new ConsultasMesero();
     $mesas = $consultas->traerMesas();
