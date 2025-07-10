@@ -30,4 +30,3 @@ header('Pragma: no-cache');
 // Leer y enviar el archivo
 readfile($filepath);
 exit;
-?> 

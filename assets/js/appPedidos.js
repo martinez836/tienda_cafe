@@ -28,6 +28,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     loadOrders(tablaPedidos); // Cargar pedidos al cargar la página
     setInterval(() => loadOrders(tablaPedidos), 30000);
+
+    const generarReporteBtn = document.getElementById('generarReporteBtn');
+    if (generarReporteBtn) {
+        generarReporteBtn.addEventListener('click', function() {
+            const fechaInicio = document.getElementById('FechaInicio').value;
+            const fechaFin = document.getElementById('FechaFin').value;
+            if (!fechaInicio || !fechaFin) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Fechas requeridas',
+                    text: 'Por favor selecciona la fecha de inicio y fin.'
+                });
+                return;
+            }
+            generarBalancePDF(fechaInicio, fechaFin);
+        });
+    }
+
+    // Evento para ver historial de balances
+    const botonVerHistorial = document.getElementById('verHistorialBtn');
+    if (botonVerHistorial) {
+        botonVerHistorial.addEventListener('click', () => {
+            cargarHistorialBalances();
+            const modalHistorial = new bootstrap.Modal(document.getElementById('historialModal'));
+            modalHistorial.show();
+        });
+    }
 });
 
 function loadOrders(tablaPedidos) {
@@ -207,3 +234,114 @@ function verDetallePedido(idPedido) {
             `;
         });
 }
+
+function generarBalancePDF(fechaInicio, fechaFin) {
+    Swal.fire({
+        title: 'Generando reporte...',
+        text: 'Por favor espera unos segundos.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    fetch('../../controllers/admin/reporteBalance.php?fecha_inicio=' + fechaInicio + '&fecha_fin=' + fechaFin)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.filename) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reporte generado',
+                    text: 'El balance se generó correctamente. Se descargará el PDF.',
+                    showConfirmButton: false,
+                    timer: 1800
+                });
+                // Descargar el PDF
+                const link = document.createElement('a');
+                link.href = '../../facturas/reportes/' + data.filename;
+                link.download = data.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'No se pudo generar el reporte.'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al generar el reporte: ' + error.message
+            });
+        });
+}
+
+function cargarHistorialInventario() {
+    fetch('../../controllers/admin/listarReportes.php?tipo=inventario')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('historialTableBody');
+            tbody.innerHTML = '';
+            if (data.success && data.data.length > 0) {
+                data.data.forEach(reporte => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${reporte.filename}</td>
+                        <td>${reporte.created}</td>
+                        <td>${reporte.size_formatted}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="descargarReporte('${reporte.filename}')">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay reportes de inventario generados</td></tr>';
+            }
+        })
+        .catch(error => {
+            const tbody = document.getElementById('historialTableBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar el historial</td></tr>';
+        });
+}
+
+function cargarHistorialBalances() {
+    fetch('../../controllers/admin/listarReportes.php?tipo=balance')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('historialTableBody');
+            tbody.innerHTML = '';
+            if (data.success && data.data.length > 0) {
+                data.data.forEach(reporte => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${reporte.filename}</td>
+                        <td>${reporte.created}</td>
+                        <td>${reporte.size_formatted}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="descargarReporte('${reporte.filename}')">
+                                <i class="fas fa-download"></i> Descargar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay balances generados</td></tr>';
+            }
+        })
+        .catch(error => {
+            const tbody = document.getElementById('historialTableBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar el historial</td></tr>';
+        });
+}
+
+// Función global para descargar reporte desde el historial
+window.descargarReporte = function(filename) {
+    window.open('../../controllers/admin/descargarReporte.php?filename=' + filename, '_blank');
+};

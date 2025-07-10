@@ -84,6 +84,26 @@ class ConsultasPedidos
         }
     }
 
+    public function getPedidosPorRango($fechaInicio, $fechaFin) {
+        try {
+            $sql = "
+                SELECT
+                    pedidos.idpedidos,
+                    pedidos.fecha_hora_pedido,
+                    pedidos.total_pedido,
+                    usuarios.nombre_usuario
+                FROM pedidos
+                JOIN usuarios ON pedidos.usuarios_idusuarios = usuarios.idusuarios
+                WHERE DATE(pedidos.fecha_hora_pedido) BETWEEN ? AND ?
+                ORDER BY pedidos.fecha_hora_pedido ASC;
+            ";
+            $stmt = $this->mysql->ejecutarSentenciaPreparada($sql, '', [$fechaInicio, $fechaFin]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Error getPedidosPorRango: ' . $e->getMessage());
+            return [];
+        }
+    }
     
 }
 

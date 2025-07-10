@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para cargar historial de reportes
     function cargarHistorialReportes() {
-        fetch('../../controllers/admin/listarReportes.php')
+        fetch('../../controllers/admin/listarReportes.php?tipo=inventario')
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('historialTableBody');
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         tbody.appendChild(row);
                     });
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay reportes generados</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay reportes de inventario generados</td></tr>';
                 }
             })
             .catch(error => {

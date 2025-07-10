@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const llenarTablaMesas = () =>{
-    fetch('/Cafe/controllers/cargar_mesas.php')
+    fetch('../../controllers/cargar_mesas.php')
     .then(response => {
         if (!response.ok) {
             throw new Error('Error en la Peticion: ' + response.statusText);

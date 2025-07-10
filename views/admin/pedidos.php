@@ -140,10 +140,27 @@ verificarAdmin();
                 </button>
             </div>
             <div class="card-body">
-                <p>Aquí se mostrará una tabla con la lista de pedidos y sus estados.</p>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover" id="tablaPedidos">
-                        <thead>
+    <div class="d-flex flex-column flex-md-row align-items-md-center mb-3 gap-2">
+        <div>
+            <label for="FechaInicio" class="form-label mb-0">Fecha de Inicio</label>
+            <input type="date" id="FechaInicio" class="form-control">
+        </div>
+        <div>
+            <label for="FechaFin" class="form-label mb-0">Fecha Final</label>
+            <input type="date" id="FechaFin" class="form-control">
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <button class="btn btn-success" id="generarReporteBtn">
+                <i class="fa-solid fa-file-pdf me-2"></i>Generar Balance PDF
+            </button>
+            <button class="btn btn-info" id="verHistorialBtn">
+                <i class="fa-solid fa-history me-2"></i>Ver Historial
+            </button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="tablaPedidos">
+            <thead>
                             <tr>
                                 <th>ID Pedido</th>
                                 <th>Fecha y Hora</th>
@@ -177,6 +194,37 @@ verificarAdmin();
                 </div>
                 <div class="modal-body" id="detallePedidoContent">
                     <!-- El contenido del detalle se cargará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Historial de Reportes -->
+    <div class="modal fade" id="historialModal" tabindex="-1" aria-labelledby="historialModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="historialModalLabel">Historial de Reportes de Inventario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="tablaHistorial">
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Archivo</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Tamaño</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historialTableBody">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>

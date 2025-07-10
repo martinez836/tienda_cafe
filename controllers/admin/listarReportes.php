@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 
 $reportesDir = __DIR__ . '/../../facturas/reportes/';
 $reportes = [];
+$tipo = $_GET['tipo'] ?? '';
 
 try {
     if (is_dir($reportesDir)) {
@@ -15,6 +16,12 @@ try {
         
         foreach ($archivos as $archivo) {
             if ($archivo !== '.' && $archivo !== '..' && pathinfo($archivo, PATHINFO_EXTENSION) === 'pdf') {
+                if ($tipo === 'balance' && strpos($archivo, 'balance_ventas_') !== 0) {
+                    continue; // Solo balances
+                }
+                if ($tipo === 'inventario' && strpos($archivo, 'reporte_inventario_') !== 0) {
+                    continue; // Solo inventario
+                }
                 $filepath = $reportesDir . $archivo;
                 $reportes[] = [
                     'filename' => $archivo,
