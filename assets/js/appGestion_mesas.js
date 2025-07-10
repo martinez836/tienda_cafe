@@ -18,24 +18,27 @@ const llenarTablaMesas = () =>{
         return response.json();
     })
     .then(data => {
-        mesasData = data; // Guardamos los datos para usarlos después
+        if (!data.success) {
+            throw new Error(data.message || 'Error al cargar las mesas');
+        }
+        
+        mesasData = data.mesas; // Guardamos los datos para usarlos después
 
         // Limpiamos el cuerpo de la tabla antes de llenarlo
         mesasTableBody.innerHTML = '';
 
         // Mapa de estados → etiqueta y clase de badge
-            const estadoConfig = {
-                1: { label: 'Activo', badge: 'bg-success' },
-                2: { label: 'Inactivo', badge: 'bg-secondary' }
-            };
-        
-        data.forEach(mesa => {
+        const estadoConfig = {
+            1: { label: 'Activo', badge: 'bg-success' },
+            2: { label: 'Inactivo', badge: 'bg-secondary' }
+        };
+
+        data.mesas.forEach(mesa => {
             const fila = document.createElement('tr');
 
             // Elegimos la configuración según el id, o un defecto
-                const cfg = estadoConfig[Number(mesa.estados_idestados)]
-                    || { label: 'Desconocido', badge: 'bg-light' };
-                const estado = `<span class="badge ${cfg.badge}">${cfg.label}</span>`;
+            const cfg = estadoConfig[mesa.estados_idestados] || { label: 'Desconocido', badge: 'bg-light' };
+            const estado = `<span class="badge ${cfg.badge}">${cfg.label}</span>`;
 
             fila.innerHTML = `
                 <td class="text-center">${mesa.idmesas}</td>
