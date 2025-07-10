@@ -63,7 +63,7 @@ try {
             $mail->Password = 'lnie usnk rnuo xueq';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
-            $mail->setFrom('recuperacionContrasenas03@gmail.com', 'Servicio de Recuperación');
+            $mail->setFrom('recuperacionContrasenas03@gmail.com', 'Servicio de Restablecimiento');
             $mail->addAddress($correo);
             $mail->isHTML(true);
             $mail->Subject = $asunto;
