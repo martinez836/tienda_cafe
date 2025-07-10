@@ -4,10 +4,36 @@ const addMesasBtn = document.querySelector('#addMesasBtn');
 const saveMesaBtn = document.querySelector('#saveMesa');
 const mesaIdInput = document.querySelector('#mesaId');
 let mesasData = []; // variable global para almacenar los datos de las mesas
+let intervaloActualizacion = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     llenarTablaMesas();
+    iniciarActualizacionAutomatica();
+    
+    // Detener actualización cuando la página pierde el foco
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            detenerActualizacionAutomatica();
+        } else {
+            iniciarActualizacionAutomatica();
+        }
+    });
 });
+
+// Iniciar actualización automática cada 60 segundos
+function iniciarActualizacionAutomatica() {
+    intervaloActualizacion = setInterval(() => {
+        llenarTablaMesas();
+    }, 60000); // 60 segundos
+}
+
+// Detener actualización automática
+function detenerActualizacionAutomatica() {
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+        intervaloActualizacion = null;
+    }
+}
 
 const llenarTablaMesas = () =>{
     fetch('../../controllers/cargar_mesas.php')
