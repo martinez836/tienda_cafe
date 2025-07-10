@@ -1,5 +1,6 @@
 <?php
 require_once '../../config/admin_controller_auth.php';
+require_once '../../config/timezone.php';
 require_once '../../models/consultasProductos.php';
 require_once '../../plugins/fpdf/fpdf.php';
 
@@ -16,6 +17,34 @@ class ReporteInventario extends FPDF
         $this->consultas = new ConsultasProductos();
     }
 
+    // Función para el pie de página personalizado
+    function Footer()
+    {
+        // Posición a 1.5 cm del final
+        $this->SetY(-15);
+        // Arial italic 8
+        $this->SetFont('Arial', 'I', 8);
+        // Color del texto en gris
+        $this->SetTextColor(128);
+        // Número de página
+        $this->Cell(0, 10, 'Pagina ' . $this->PageNo() . ' de {nb}', 0, 0, 'C');
+    }
+
+    // Función para el encabezado personalizado
+    function Header()
+    {
+        // Logo (opcional)
+        // $this->Image('logo.png', 10, 6, 30);
+        // Arial bold 15
+        $this->SetFont('Arial', 'B', 15);
+        // Mover a la derecha
+        $this->Cell(80);
+        // Título
+        $this->Cell(30, 10, 'TIENDA DE CAFE', 0, 0, 'C');
+        // Salto de línea
+        $this->Ln(20);
+    }
+
     public function generarReporte()
     {
         try {
@@ -26,7 +55,8 @@ class ReporteInventario extends FPDF
             $productosSinStock = $this->consultas->getProductosSinStock();
             $estadisticasCategoria = $this->consultas->getEstadisticasPorCategoria();
 
-            // Crear el PDF
+            // Crear el PDF con paginación
+            $this->AliasNbPages();
             $this->AddPage();
             $this->SetFont('Arial', 'B', 16);
             
@@ -36,7 +66,7 @@ class ReporteInventario extends FPDF
             
             // Fecha del reporte
             $this->SetFont('Arial', '', 10);
-            $this->Cell(0, 10, 'Fecha del reporte: ' . date('d/m/Y H:i:s'), 0, 1, 'L');
+            $this->Cell(0, 10, 'Fecha del reporte: ' . getFechaHoraLocal() . ' (Hora local Colombia)', 0, 1, 'L');
             $this->Ln(5);
 
             // Resumen general
@@ -74,6 +104,22 @@ class ReporteInventario extends FPDF
             $fill = false;
             
             foreach ($productos as $producto) {
+                // Verificar si necesitamos una nueva página
+                if ($this->GetY() > 250) {
+                    $this->AddPage();
+                    // Repetir encabezados de tabla en nueva página
+                    $this->SetFont('Arial', 'B', 9);
+                    $this->SetFillColor(200, 200, 200);
+                    $this->Cell(15, 8, 'ID', 1, 0, 'C', true);
+                    $this->Cell(50, 8, 'NOMBRE', 1, 0, 'C', true);
+                    $this->Cell(25, 8, 'PRECIO', 1, 0, 'C', true);
+                    $this->Cell(20, 8, 'STOCK', 1, 0, 'C', true);
+                    $this->Cell(35, 8, 'CATEGORIA', 1, 0, 'C', true);
+                    $this->Cell(25, 8, 'ESTADO', 1, 0, 'C', true);
+                    $this->Cell(20, 8, 'TIPO', 1, 1, 'C', true);
+                    $this->SetFont('Arial', '', 8);
+                }
+                
                 // Determinar el color de fondo según el stock
                 if ($producto['stock_producto'] === null || $producto['stock_producto'] == 0) {
                     $this->SetFillColor(255, 200, 200); // Rojo claro para sin stock
@@ -91,7 +137,7 @@ class ReporteInventario extends FPDF
                 $stock = $producto['stock_producto'] === null || $producto['stock_producto'] == 0 ? 'Sin stock' : $producto['stock_producto'];
                 $this->Cell(20, 6, $stock, 1, 0, 'C', true);
                 
-                $this->Cell(35, 6, $producto['nombre_categoria'] ?? 'Sin categoría', 1, 0, 'L', true);
+                $this->Cell(35, 6, $producto['nombre_categoria'] ?? 'Sin categoria', 1, 0, 'L', true);
                 
                 // Estado
                 $estado = $producto['estados_idestados'] == 1 ? 'Activo' : 'Inactivo';
@@ -114,7 +160,7 @@ class ReporteInventario extends FPDF
                 // Encabezados de la tabla de categorías
                 $this->SetFont('Arial', 'B', 9);
                 $this->SetFillColor(200, 200, 200);
-                $this->Cell(50, 8, 'CATEGORÍA', 1, 0, 'C', true);
+                $this->Cell(50, 8, 'CATEGORIA', 1, 0, 'C', true);
                 $this->Cell(25, 8, 'TOTAL', 1, 0, 'C', true);
                 $this->Cell(25, 8, 'CON STOCK', 1, 0, 'C', true);
                 $this->Cell(25, 8, 'BAJO STOCK', 1, 0, 'C', true);
@@ -124,7 +170,22 @@ class ReporteInventario extends FPDF
                 // Datos de categorías
                 $this->SetFont('Arial', '', 8);
                 foreach ($estadisticasCategoria as $categoria) {
-                    $this->Cell(50, 6, $categoria['nombre_categoria'] ?? 'Sin categoría', 1, 0, 'L');
+                    // Verificar si necesitamos una nueva página
+                    if ($this->GetY() > 250) {
+                        $this->AddPage();
+                        // Repetir encabezados de tabla en nueva página
+                        $this->SetFont('Arial', 'B', 9);
+                        $this->SetFillColor(200, 200, 200);
+                        $this->Cell(50, 8, 'CATEGORIA', 1, 0, 'C', true);
+                        $this->Cell(25, 8, 'TOTAL', 1, 0, 'C', true);
+                        $this->Cell(25, 8, 'CON STOCK', 1, 0, 'C', true);
+                        $this->Cell(25, 8, 'BAJO STOCK', 1, 0, 'C', true);
+                        $this->Cell(25, 8, 'SIN STOCK', 1, 0, 'C', true);
+                        $this->Cell(35, 8, 'STOCK TOTAL', 1, 1, 'C', true);
+                        $this->SetFont('Arial', '', 8);
+                    }
+                    
+                    $this->Cell(50, 6, $categoria['nombre_categoria'] ?? 'Sin categoria', 1, 0, 'L');
                     $this->Cell(25, 6, $categoria['total_productos'], 1, 0, 'C');
                     $this->Cell(25, 6, $categoria['con_stock'], 1, 0, 'C');
                     $this->Cell(25, 6, $categoria['bajo_stock'], 1, 0, 'C');
@@ -150,7 +211,19 @@ class ReporteInventario extends FPDF
                     $this->SetFont('Arial', '', 9);
                     
                     foreach ($productosSinStock as $producto) {
-                        $this->Cell(0, 6, '• ' . $producto['nombre_producto'] . ' - Categoría: ' . ($producto['nombre_categoria'] ?? 'Sin categoría') . ' - Precio: $' . number_format($producto['precio_producto'], 0, ',', '.'), 0, 1);
+                        // Verificar si necesitamos una nueva página
+                        if ($this->GetY() > 250) {
+                            $this->AddPage();
+                            $this->SetFont('Arial', 'B', 12);
+                            $this->Cell(0, 10, 'ALERTAS DE STOCK (CONTINUACION)', 0, 1, 'L');
+                            $this->Ln(5);
+                            $this->SetFont('Arial', 'B', 10);
+                            $this->SetTextColor(255, 0, 0);
+                            $this->Cell(0, 8, 'PRODUCTOS SIN STOCK (CONTINUACION):', 0, 1, 'L');
+                            $this->SetTextColor(0, 0, 0);
+                            $this->SetFont('Arial', '', 9);
+                        }
+                        $this->Cell(0, 6, '• ' . $producto['nombre_producto'] . ' - Categoria: ' . ($producto['nombre_categoria'] ?? 'Sin categoria') . ' - Precio: $' . number_format($producto['precio_producto'], 0, ',', '.'), 0, 1);
                     }
                     $this->Ln(5);
                 }
@@ -164,18 +237,25 @@ class ReporteInventario extends FPDF
                     $this->SetFont('Arial', '', 9);
                     
                     foreach ($productosBajoStock as $producto) {
-                        $this->Cell(0, 6, '• ' . $producto['nombre_producto'] . ' - Stock: ' . $producto['stock_producto'] . ' - Categoría: ' . ($producto['nombre_categoria'] ?? 'Sin categoría') . ' - Precio: $' . number_format($producto['precio_producto'], 0, ',', '.'), 0, 1);
+                        // Verificar si necesitamos una nueva página
+                        if ($this->GetY() > 250) {
+                            $this->AddPage();
+                            $this->SetFont('Arial', 'B', 12);
+                            $this->Cell(0, 10, 'ALERTAS DE STOCK (CONTINUACION)', 0, 1, 'L');
+                            $this->Ln(5);
+                            $this->SetFont('Arial', 'B', 10);
+                            $this->SetTextColor(255, 165, 0);
+                            $this->Cell(0, 8, 'PRODUCTOS CON BAJO STOCK (CONTINUACION):', 0, 1, 'L');
+                            $this->SetTextColor(0, 0, 0);
+                            $this->SetFont('Arial', '', 9);
+                        }
+                        $this->Cell(0, 6, '• ' . $producto['nombre_producto'] . ' - Stock: ' . $producto['stock_producto'] . ' - Categoria: ' . ($producto['nombre_categoria'] ?? 'Sin categoria') . ' - Precio: $' . number_format($producto['precio_producto'], 0, ',', '.'), 0, 1);
                     }
                 }
             }
 
-            // Pie de página
-            $this->SetY(-15);
-            $this->SetFont('Arial', 'I', 8);
-            $this->Cell(0, 10, 'Página ' . $this->PageNo() . '/{nb}', 0, 0, 'C');
-
             // Generar el PDF
-            $filename = 'reporte_inventario_' . date('Y-m-d_H-i-s') . '.pdf';
+            $filename = 'reporte_inventario_' . getFechaHoraLocal('Y-m-d_H-i-s') . '.pdf';
             $filepath = __DIR__ . '/../../facturas/reportes/' . $filename;
             $this->Output('F', $filepath);
             

@@ -1,47 +1,60 @@
 <?php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_name('cafe_session');
     session_start();
 }
+
 require_once '../config/config.php';
 
-// Verificar si está logueado
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: ../views/login.php');
     exit();
 }
 
-// Permitir acceso a Mesero y Administrador
 if ($_SESSION['usuario_rol'] !== 'Mesero' && $_SESSION['usuario_rol'] !== 'Administrador') {
     header('Location: ../views/login.php');
     exit();
 }
 
 require_once '../models/consultas.php';
-$consultas = new consultas();
-$mesas = $consultas->traer_mesas();
-$categorias = $consultas->traer_categorias();
-$productos = $consultas->traer_productos_por_categoria('');
+
+
+try {
+    $consultas = new ConsultasMesero();
+    $mesas = $consultas->traerMesas();
+    $categorias = $consultas->traerCategorias();
+} catch (Exception $e) {
+    die("Error al cargar datos iniciales: " . $e->getMessage());
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tienda de Café</title>
-  <link href="/Cafe/assets/cssBootstrap/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" />
+  <!-- Respaldo: -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="/Cafe/assets/css/estiloMesero.css">
+  <link rel="stylesheet" href="../assets/css/estiloMesero.css" />
 </head>
 
 <body class="bg-coffee">
   <div class="container py-4">
-    <header class="text-center mb-5">
-      <h1 class="display-4 text-light fw-bold">
-        <i class="fas fa-mug-hot me-2"></i>Tienda de Café
-      </h1>
-      <p class="text-light opacity-75">Sistema de Gestión de Pedidos</p>
+    <header class="text-center mb-5 d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="display-4 text-light fw-bold mb-0">
+          <i class="fas fa-mug-hot me-2"></i>Tienda de Café
+        </h1>
+        <h4 class="text-light opacity-75 mb-0">Sistema de Gestión de Pedidos</h4>
+      </div>
+      <div>
+        <button id="btnCerrarSesion" class="btn btn-danger btn-lg" title="Cerrar Sesión">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
     </header>
 
     <div class="row g-4">
@@ -56,18 +69,23 @@ $productos = $consultas->traer_productos_por_categoria('');
               </h5>
               <select id="mesaSelect" class="form-select form-select-lg rounded-3">
                 <option value="">Seleccione una mesa</option>
-                <?php
-                if ($mesas) {
-                  foreach ($mesas as $mesa) {
-                ?>
-                    <option value="<?php echo $mesa['nombre']; ?>"><?php echo $mesa['nombre']; ?></option>
-                <?php
-                  }
+                <?php 
+                if ($mesas && is_array($mesas)) {
+                    foreach ($mesas as $mesa) {
+                        $deshabilitar = ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0 || $mesa['tiene_token_activo'] > 0);
+                        $disabled = $deshabilitar ? 'disabled' : '';
+                        $msg = $mesa['tiene_pedido_confirmado'] > 0 ? ' (Confirmado)' : ($mesa['tiene_pedido_entregado'] > 0 ? ' (Entregado)' : '');
+                        $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
+                        $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
+                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '" ' . $disabled . '>' . htmlspecialchars($mesa['nombre']) . $token . $msg . '</option>';
+                    }
                 }
                 ?>
               </select>
+              <button class="btn btn-warning mt-2 w-100" onclick="generarTokenMesa()">
+                <i class="fas fa-key me-2"></i>Generar Token para la Mesa
+              </button>
             </div>
-
             <!-- Categorías -->
             <div class="mb-4">
               <h5 class="card-title mb-3">
@@ -75,19 +93,44 @@ $productos = $consultas->traer_productos_por_categoria('');
               </h5>
               <select id="categoriaSelect" class="form-select form-select-lg rounded-3">
                 <option value="">Seleccione una categoría</option>
-                <?php
-                if ($categorias) {
-                  foreach ($categorias as $categoria) {
-                ?>
-                    <option value="<?php echo $categoria['idcategorias']; ?>"><?php echo $categoria['nombre_categoria']; ?></option>
-                <?php
-                  }
+                <?php 
+                if ($categorias && is_array($categorias)) {
+                    foreach ($categorias as $categoria) {
+                        echo '<option value="' . (int)$categoria['idcategorias'] . '">' . 
+                             htmlspecialchars($categoria['nombre_categoria']) . '</option>';
+                    }
                 }
                 ?>
               </select>
             </div>
           </div>
         </div>
+        <!-- Tarjeta de mesas con token activo -->
+        <?php
+        $mesasConToken = array_filter($mesas, function($m) {
+          return isset($m['token_activo']) && $m['token_activo'];
+        });
+        if (count($mesasConToken) > 0): ?>
+          <div class="card shadow-lg border-0 rounded-4 bg-light mt-4">
+            <div class="card-body p-4">
+              <h5 class="card-title mb-3 text-danger">
+                <i class="fas fa-key me-2"></i>Mesas con Token Activo
+              </h5>
+              <ul class="list-group">
+                <?php foreach ($mesasConToken as $mesa): ?>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                      <strong><?php echo htmlspecialchars($mesa['nombre']); ?></strong>                      
+                    </span>
+                    <button class="btn btn-danger btn-sm" onclick="cancelarTokenMesa(<?php echo (int)$mesa['idmesas']; ?>, '<?php echo htmlspecialchars($mesa['nombre']); ?>')">
+                      <i class="fas fa-ban me-1"></i>Cancelar Token
+                    </button>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
 
       <!-- Panel de Productos -->
@@ -101,70 +144,88 @@ $productos = $consultas->traer_productos_por_categoria('');
               <input type="text" id="buscadorProductos" class="form-control" placeholder="Buscar producto...">
             </div>
             <div class="row g-3" id="productosContainer">
-              <!-- Los productos se cargarán dinámicamente aquí -->
+              <!-- Los productos se cargarán dinámicamente -->
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Panel de Pedido Actual -->
-      <div class="col-12">
-        <div class="card shadow-lg border-0 rounded-4 bg-light">
+        <!-- Pedido Actual -->
+        <div class="card shadow-lg border-0 rounded-4 bg-light mt-4">
           <div class="card-body p-4">
             <h5 class="card-title mb-4">
-              <i class="fas fa-clipboard-list me-2"></i>Pedido Actual
+              <i class="fas fa-shopping-cart me-2"></i>Pedido Actual
             </h5>
-            <ul class="list-group list-group-flush mb-4" id="pedidoLista"></ul>
-            <button class="btn btn-success btn-lg w-100 rounded-3" onclick="confirmarPedido()">
+            <ul class="list-group mb-3" id="pedidoLista">
+              <!-- Los items del pedido se cargarán dinámicamente -->
+            </ul>
+            <button class="btn btn-success w-100" onclick="confirmarPedido()">
               <i class="fas fa-check me-2"></i>Confirmar Pedido
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Panel de Pedidos Activos -->
-      <div class="col-12">
-        <div class="card shadow-lg border-0 rounded-4 bg-light">
+        <!-- Pedidos Activos de la Mesa -->
+        <div class="card shadow-lg border-0 rounded-4 bg-light mt-4">
           <div class="card-body p-4">
             <h5 class="card-title mb-4">
-              <i class="fas fa-clock me-2"></i>Pedidos Activos
+              <i class="fas fa-list me-2"></i>Pedidos Activos de la Mesa
             </h5>
-            <ul class="list-group list-group-flush" id="pedidosActivos"></ul>
+            <div id="pedidosActivosMesa"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal de Observaciones -->
-  <div class="modal fade" id="observacionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow">
-        <div class="modal-header border-0">
-          <h5 class="modal-title">
-            <i class="fas fa-comment-alt me-2"></i>Observaciones
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- Modal de Observación -->
+  <div class="modal fade" id="observacionModal" tabindex="-1" aria-labelledby="observacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="observacionModalLabel">Agregar Observaciones</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" id="productoSeleccionado" />
           <div class="mb-3">
-            <label class="form-label">Comentario adicional:</label>
-            <textarea id="comentarioInput" class="form-control" rows="3" placeholder="Escribe aquí las observaciones, sabores u otros"></textarea>
+            <label class="form-label">Producto:</label>
+            <p id="productoNombreSeleccionado" class="form-control-static"></p>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Cantidad:</label>
+            <p id="productoCantidadSeleccionada" class="form-control-static"></p>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Precio:</label>
+            <p id="productoPrecioSeleccionado" class="form-control-static"></p>
+          </div>
+          <div class="mb-3">
+            <label for="comentarioInput" class="form-label">Observaciones:</label>
+            <textarea class="form-control" id="comentarioInput" rows="3" placeholder="Ingrese observaciones del producto..."></textarea>
+          </div>
+          <input type="hidden" id="productoSeleccionado">
         </div>
-        <div class="modal-footer border-0">
-          <button class="btn btn-primary btn-lg px-4" onclick="agregarAlPedido()">
-            <i class="fas fa-plus me-2"></i>Agregar
-          </button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="agregarAlPedido()">Agregar al Pedido</button>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="/Cafe/assets/jsBootstrap/bootstrap.bundle.min.js"></script>
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="/Cafe/assets/js/appMesero.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../assets/js/appMesero.js"></script>
+  <script>
+  // Mostrar el botón si la opción seleccionada al cargar ya tiene token activo
+  window.addEventListener('DOMContentLoaded', function() {
+    const selected = document.getElementById('mesaSelect').options[document.getElementById('mesaSelect').selectedIndex];
+    if (selected && selected.getAttribute('data-token-activo') === '1') {
+      document.getElementById('btnCancelarToken').style.display = '';
+    } else {
+      document.getElementById('btnCancelarToken').style.display = 'none';
+    }
+  });
+  </script>
 </body>
-
 </html>

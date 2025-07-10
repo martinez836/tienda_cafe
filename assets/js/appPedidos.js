@@ -95,19 +95,27 @@ function loadOrders(tablaPedidos) {
 }
 
 function getEstadoColor(estado) {
-    switch(estado.toLowerCase()) {
-        case 'pendiente':
-            return 'warning';
-        case 'en preparación':
-            return 'info';
-        case 'listo':
-            return 'success';
+    // Convertir a minúsculas y eliminar espacios extra
+    const estadoNormalizado = estado.toLowerCase().trim();
+    
+    switch(estadoNormalizado) {
+        case 'confirmado':
+        case '3':
+            return 'warning'; // Amarillo para confirmado
         case 'entregado':
-            return 'primary';
+        case '4':
+            return 'info'; // Azul para entregado
+        case 'procesado':
+        case '5':
+            return 'success'; // Verde para procesado
+        case 'pendiente':
+        case '1':
+            return 'primary'; // Azul oscuro para pendiente
         case 'cancelado':
-            return 'danger';
+        case '2':
+            return 'danger'; // Rojo para cancelado
         default:
-            return 'secondary';
+            return 'secondary'; // Gris para estados desconocidos
     }
 }
 
