@@ -20,7 +20,7 @@ RecuperarContrasenaForm.addEventListener('submit', function(e) {
                 text: 'Se ha enviado un correo con las instrucciones para recuperar su contraseña.',
                 confirmButtonColor: '#3085d6'
             }).then(() => {
-                window.location.href = './InicioSesion.php';
+                window.location.href = './login.php';
             });
         } else {
             Swal.fire({

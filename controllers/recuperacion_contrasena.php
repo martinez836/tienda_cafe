@@ -47,10 +47,10 @@ try {
         $stmt->execute();
 
         // Crear el enlace de recuperación (ajusta la ruta a tu sistema)
-        $enlace = "http://localhost/cafe/views/nuevaContrasena.php?correo=" . urlencode($correo) . "&codigo=" . $codigo;
+        $enlace = "http://localhost/tienda_cafe/views/nuevaContrasena.php?correo=" . urlencode($correo) . "&codigo=" . $codigo;
 
         // Crear el mensaje de recuperación
-        $asunto = "Recuperación de contraseña";
+        $asunto = "Resturar contrasena";
         $mensaje = "Haz clic en este enlace para recuperar tu contraseña: <a href='$enlace'>Recuperar Contraseña</a>";
 
         // Usar PHPMailer para enviar el correo

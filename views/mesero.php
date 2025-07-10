@@ -1,13 +1,24 @@
 <?php
-session_start();
 
-if (!isset($_SESSION['usuario'])) {
-  header('Location: login.php');
-  exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('cafe_session');
+    session_start();
+}
+
+require_once '../config/config.php';
+
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: ../views/login.php');
+    exit();
+}
+
+if ($_SESSION['usuario_rol'] !== 'Mesero' && $_SESSION['usuario_rol'] !== 'Administrador') {
+    header('Location: ../views/login.php');
+    exit();
 }
 
 require_once '../models/consultas.php';
-require_once '../config/config.php';
+
 
 try {
     $consultas = new ConsultasMesero();

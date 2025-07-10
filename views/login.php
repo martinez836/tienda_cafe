@@ -40,7 +40,9 @@ require_once '../config/config.php';
                     <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
                 </div>
             </div>
-
+            <div class="mb-3">
+                <a href="./restaurarContrasena.php">¿Olvidaste tu contraseña?</a>
+              </div>
             <button type="submit" class="btn btn-primary btn-login w-100">
                 <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
             </button>

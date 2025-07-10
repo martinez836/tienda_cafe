@@ -114,7 +114,7 @@ function handlePasswordUpdate(e) {
                 text: data.message || 'Tu contraseña ha sido actualizada exitosamente.',
                 confirmButtonColor: '#3085d6'
             }).then(() => {
-                window.location.href = './InicioSesion.php';
+                window.location.href = './login.php';
             });
         } else {
             Swal.fire({
