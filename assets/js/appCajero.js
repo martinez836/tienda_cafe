@@ -1,4 +1,5 @@
 let selectedOrder = null;
+let intervaloActualizacion = null;
 
 // Formato de moneda colombiana
 function formatCurrency(amount) {
@@ -247,5 +248,32 @@ function showSwalError(msg) {
     });
 }
 
+// Iniciar actualización automática cada 30 segundos
+function iniciarActualizacionAutomatica() {
+    intervaloActualizacion = setInterval(() => {
+        loadOrders();
+    }, 7000); // 7 segundos
+}
+
+// Detener actualización automática
+function detenerActualizacionAutomatica() {
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+        intervaloActualizacion = null;
+    }
+}
+
 // Inicializar
-document.addEventListener('DOMContentLoaded', loadOrders);
+document.addEventListener('DOMContentLoaded', () => {
+    loadOrders();
+    iniciarActualizacionAutomatica();
+    
+    // Detener actualización cuando la página pierde el foco
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            detenerActualizacionAutomatica();
+        } else {
+            iniciarActualizacionAutomatica();
+        }
+    });
+});

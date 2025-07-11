@@ -19,8 +19,7 @@ class consultasCajero
                 p.idpedidos,
                 p.fecha_hora_pedido,
                 m.nombre AS nombre_mesa,
-                u.nombre_usuario,
-                dp.producto,
+                u.nombre_usuario, 
                 dp.precio_producto,
                 dp.cantidad_producto,
                 dp.subtotal,
@@ -34,8 +33,8 @@ class consultasCajero
                 WHERE p.estados_idestados = 4
                 ORDER BY p.idpedidos DESC;
             ";
-             $stmt = $this->mysql->efectuarConsulta($query);
-             return $stmt;
+            $stmt = $this->mysql->efectuarConsulta($query);
+            return $stmt;
 
         } catch (Exception $e) {
             //throw $th;
