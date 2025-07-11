@@ -187,10 +187,10 @@ class ConsultasMesero
     }
 
     // CONFIRMAR PEDIDO (desde confirmar_pedido.php)
-    public function confirmarPedidoCliente($pdo, $mesaId, $productos, $token = null) {
+    public function confirmarPedidoCliente($pdo, $mesaId, $productos, $token = null, $usuarioId = 1) {
         // 1. Crear el pedido (con tipo_pedido y token_utilizado)
-        $stmt = $pdo->prepare("INSERT INTO pedidos (fecha_hora_pedido, total_pedido, estados_idestados, mesas_idmesas, usuarios_idusuarios, tipo_pedido, token_utilizado) VALUES (NOW(), 0, 3, ?, 1, 'cliente', ?)");
-        $stmt->execute([$mesaId, $token]);
+        $stmt = $pdo->prepare("INSERT INTO pedidos (fecha_hora_pedido, total_pedido, estados_idestados, mesas_idmesas, usuarios_idusuarios, tipo_pedido, token_utilizado) VALUES (NOW(), 0, 3, ?, ?, 'cliente', ?)");
+        $stmt->execute([$mesaId, $usuarioId, $token]);
         $pedido_id = $pdo->lastInsertId();
 
         // 2. Insertar los productos del pedido
