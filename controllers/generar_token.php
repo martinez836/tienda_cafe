@@ -73,14 +73,11 @@ try {
     $pdo = config::conectar();
     $consultas = new ConsultasMesero();
     
-    // Verificar si existe al menos un usuario en la tabla usuarios
-    $usuario = $consultas->getPrimerUsuario($pdo);
-    if (!$usuario) {
-        // Si no hay usuarios, crear uno por defecto con la estructura correcta
-        $usuario_id = $consultas->crearUsuarioPorDefecto($pdo);
-    } else {
-        $usuario_id = (int)$usuario['idusuarios'];
+    // Usar el usuario de la sesión
+    if (!isset($_SESSION['usuario_id'])) {
+        throw new Exception('Sesión de usuario no encontrada. Por favor, inicie sesión nuevamente.');
     }
+    $usuario_id = (int)$_SESSION['usuario_id'];
 
     // Generar token de 4 dígitos
     $token = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);

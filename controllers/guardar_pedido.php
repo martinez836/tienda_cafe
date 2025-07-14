@@ -3,6 +3,12 @@ require_once '../models/consultas.php';
 require_once '../config/config.php';
 require_once '../config/security.php';
 
+// Iniciar sesión si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('cafe_session');
+    session_start();
+}
+
 header('Content-Type: application/json');
 
 try {
@@ -46,7 +52,12 @@ try {
     $pdo->beginTransaction();
     
     try {
-        $pedidoId = $consultas->guardarPedido($pdo, $mesa_id, 1, $token); // 1 es el ID del usuario por defecto
+        // Obtener el id del usuario de la sesión
+        if (!isset($_SESSION['usuario_id'])) {
+            throw new Exception('Sesión de usuario no encontrada. Por favor, inicie sesión nuevamente.');
+        }
+        $usuario_id = (int)$_SESSION['usuario_id'];
+        $pedidoId = $consultas->guardarPedido($pdo, $mesa_id, $usuario_id, $token);
         
         foreach ($productos_sanitizados as $producto) {
             $consultas->guardarDetallePedido($pdo, $producto, $pedidoId);

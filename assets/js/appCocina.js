@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const detalles_pedido = document.getElementById('detalles_pedido');
 
     let idPedidoSeleccionado = null;
+    let intervaloActualizacion = null;
 
     // Función para obtener y mostrar pedidos pendientes
     function obtenerPedidosPendientes() {
@@ -166,6 +167,33 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
+    // Iniciar actualización automática cada 30 segundos
+    function iniciarActualizacionAutomatica() {
+        intervaloActualizacion = setInterval(() => {
+            obtenerPedidosPendientes();
+        }, 7000); // 7 segundos
+    }
+
+    // Detener actualización automática
+    function detenerActualizacionAutomatica() {
+        if (intervaloActualizacion) {
+            clearInterval(intervaloActualizacion);
+            intervaloActualizacion = null;
+        }
+    }
+
+    // Iniciar actualización automática al cargar la página
+    iniciarActualizacionAutomatica();
+
+    // Detener actualización cuando la página pierde el foco
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            detenerActualizacionAutomatica();
+        } else {
+            iniciarActualizacionAutomatica();
+        }
+    });
+
     // Función para marcar un pedido como listo
     window.marcarPedidoComoListo = function(idPedido) {
         Swal.fire({
@@ -224,6 +252,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carga inicial de pedidos pendientes cuando la página se carga
     obtenerPedidosPendientes();
+    setInterval(obtenerPedidosPendientes, 10000)
 });
 
 function showSwalError(msg) {

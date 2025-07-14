@@ -33,8 +33,8 @@ class consultasCajero
                 WHERE p.estados_idestados = 4
                 ORDER BY p.idpedidos DESC;
             ";
-             $stmt = $this->mysql->efectuarConsulta($query);
-             return $stmt;
+            $stmt = $this->mysql->efectuarConsulta($query);
+            return $stmt;
 
         } catch (Exception $e) {
             //throw $th;

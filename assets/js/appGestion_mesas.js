@@ -4,10 +4,36 @@ const addMesasBtn = document.querySelector('#addMesasBtn');
 const saveMesaBtn = document.querySelector('#saveMesa');
 const mesaIdInput = document.querySelector('#mesaId');
 let mesasData = []; // variable global para almacenar los datos de las mesas
+let intervaloActualizacion = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     llenarTablaMesas();
+    iniciarActualizacionAutomatica();
+    
+    // Detener actualización cuando la página pierde el foco
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            detenerActualizacionAutomatica();
+        } else {
+            iniciarActualizacionAutomatica();
+        }
+    });
 });
+
+// Iniciar actualización automática cada 60 segundos
+function iniciarActualizacionAutomatica() {
+    intervaloActualizacion = setInterval(() => {
+        llenarTablaMesas();
+    }, 60000); // 60 segundos
+}
+
+// Detener actualización automática
+function detenerActualizacionAutomatica() {
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+        intervaloActualizacion = null;
+    }
+}
 
 const llenarTablaMesas = () =>{
     fetch('../../controllers/cargar_mesas.php')
@@ -18,7 +44,11 @@ const llenarTablaMesas = () =>{
         return response.json();
     })
     .then(data => {
-        mesasData = data; // Guardamos los datos para usarlos después
+        if (!data.success) {
+            throw new Error(data.message || 'Error al cargar las mesas');
+        }
+        
+        mesasData = data.mesas; // Guardamos los datos para usarlos después
 
         // Limpiamos el cuerpo de la tabla antes de llenarlo
         mesasTableBody.innerHTML = '';
@@ -33,9 +63,8 @@ const llenarTablaMesas = () =>{
             const fila = document.createElement('tr');
 
             // Elegimos la configuración según el id, o un defecto
-                const cfg = estadoConfig[Number(mesa.estados_idestados)]
-                    || { label: 'Desconocido', badge: 'bg-light' };
-                const estado = `<span class="badge ${cfg.badge}">${cfg.label}</span>`;
+            const cfg = estadoConfig[mesa.estados_idestados] || { label: 'Desconocido', badge: 'bg-light' };
+            const estado = `<span class="badge ${cfg.badge}">${cfg.label}</span>`;
 
             fila.innerHTML = `
                 <td class="text-center">${mesa.idmesas}</td>
