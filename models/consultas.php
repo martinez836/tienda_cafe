@@ -18,6 +18,7 @@ class ConsultasMesero
         $consulta = "SELECT m.*, 
             (SELECT COUNT(*) FROM tokens_mesa t WHERE t.mesas_idmesas = m.idmesas AND t.estado_token = 'activo' AND t.fecha_hora_expiracion > NOW()) as tiene_token_activo,
             (SELECT t.token FROM tokens_mesa t WHERE t.mesas_idmesas = m.idmesas AND t.estado_token = 'activo' AND t.fecha_hora_expiracion > NOW() ORDER BY t.fecha_hora_generacion DESC LIMIT 1) as token_activo,
+            (SELECT t.usuarios_idusuarios FROM tokens_mesa t WHERE t.mesas_idmesas = m.idmesas AND t.estado_token = 'activo' AND t.fecha_hora_expiracion > NOW() ORDER BY t.fecha_hora_generacion DESC LIMIT 1) as token_usuario_id,
             (SELECT COUNT(*) FROM pedidos p WHERE p.mesas_idmesas = m.idmesas AND p.estados_idestados = 3) as tiene_pedido_confirmado,
             (SELECT COUNT(*) FROM pedidos p WHERE p.mesas_idmesas = m.idmesas AND p.estados_idestados = 4) as tiene_pedido_entregado,
             (SELECT COUNT(*) FROM pedidos p WHERE p.mesas_idmesas = m.idmesas AND p.estados_idestados = 5) as tiene_pedido_procesado

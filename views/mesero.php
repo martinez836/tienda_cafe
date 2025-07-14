@@ -50,7 +50,8 @@ try {
         </h1>
         <h4 class="text-light opacity-75 mb-0">Sistema de Gestión de Pedidos</h4>
       </div>
-      <div>
+      <div class="d-flex align-items-center gap-3">
+        <h2 class="text-light mb-0">usuario: <?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? ''); ?></h2>
         <button id="btnCerrarSesion" class="btn btn-danger btn-lg" title="Cerrar Sesión">
           <i class="fas fa-sign-out-alt"></i>
         </button>
@@ -72,9 +73,17 @@ try {
                 <?php 
                 if (
                     $mesas && is_array($mesas)) {
+                    $usuarioId = $_SESSION['usuario_id'];
                     foreach ($mesas as $mesa) {
                         // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
                         if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
+                            continue;
+                        }
+                        // Si la mesa tiene token activo, solo mostrarla si el token es del usuario logueado
+                        if (
+                            isset($mesa['token_activo']) && $mesa['token_activo'] && 
+                            isset($mesa['token_usuario_id']) && $mesa['token_usuario_id'] != $usuarioId
+                        ) {
                             continue;
                         }
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
@@ -109,8 +118,9 @@ try {
         </div>
         <!-- Tarjeta de mesas con token activo -->
         <?php
-        $mesasConToken = array_filter($mesas, function($m) {
-          return isset($m['token_activo']) && $m['token_activo'];
+        $usuarioId = $_SESSION['usuario_id'];
+        $mesasConToken = array_filter($mesas, function($m) use ($usuarioId) {
+          return isset($m['token_activo']) && $m['token_activo'] && isset($m['token_usuario_id']) && $m['token_usuario_id'] == $usuarioId;
         });
         if (count($mesasConToken) > 0): ?>
           <div class="card shadow-lg border-0 rounded-4 bg-light mt-4">
@@ -218,16 +228,5 @@ try {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/appMesero.js"></script>
-  <script>
-  // Mostrar el botón si la opción seleccionada al cargar ya tiene token activo
-  window.addEventListener('DOMContentLoaded', function() {
-    const selected = document.getElementById('mesaSelect').options[document.getElementById('mesaSelect').selectedIndex];
-    if (selected && selected.getAttribute('data-token-activo') === '1') {
-      document.getElementById('btnCancelarToken').style.display = '';
-    } else {
-      document.getElementById('btnCancelarToken').style.display = 'none';
-    }
-  });
-  </script>
 </body>
 </html>

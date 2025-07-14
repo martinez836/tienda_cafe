@@ -818,3 +818,53 @@ function cargarPedidosActivosGlobal() {
       }
     });
 }
+
+// Función global para cancelar el token de una mesa
+function cancelarTokenMesa(mesaId, mesaNombre) {
+  Swal.fire({
+    title: '¿Cancelar token?',
+    text: `¿Seguro que deseas cancelar el token de la mesa "${mesaNombre}"?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../controllers/cancelar_token.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mesa_id: mesaId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Token cancelado', 'El token ha sido cancelado correctamente.', 'success')
+            .then(() => location.reload());
+        } else {
+          Swal.fire('Error', data.message || 'No se pudo cancelar el token', 'error');
+        }
+      })
+      .catch(() => {
+        Swal.fire('Error', 'No se pudo cancelar el token', 'error');
+      });
+    }
+  });
+}
+window.cancelarTokenMesa = cancelarTokenMesa;
+
+// Mostrar/ocultar el botón de cancelar token según la mesa seleccionada
+window.addEventListener('DOMContentLoaded', function() {
+  const mesaSelect = document.getElementById('mesaSelect');
+  const btnCancelarToken = document.getElementById('btnCancelarToken');
+  if (!mesaSelect || !btnCancelarToken) return;
+  function updateBtnCancelarToken() {
+    const selected = mesaSelect.options[mesaSelect.selectedIndex];
+    if (selected && selected.getAttribute('data-token-activo') === '1') {
+      btnCancelarToken.style.display = '';
+    } else {
+      btnCancelarToken.style.display = 'none';
+    }
+  }
+  mesaSelect.addEventListener('change', updateBtnCancelarToken);
+  updateBtnCancelarToken();
+});
