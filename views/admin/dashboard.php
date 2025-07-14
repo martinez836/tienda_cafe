@@ -129,6 +129,21 @@ $usuario = obtenerUsuarioAdmin();
                         <i class="fas fa-chart-bar me-2"></i>Gráficas
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../cocina.php">
+                        <i class="fas fa-utensils me-2"></i>Módulo de Cocina
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../cajero.php">
+                        <i class="fas fa-cash-register me-2"></i>Módulo de Cajero
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../../controllers/logout.php">
+                        <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
