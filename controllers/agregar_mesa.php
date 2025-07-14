@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'] ?? null;
 
     if ($nombre) {
-        $consultas = new consultas();
+        $consultas = new ConsultasMesero();
         $resultado = $consultas->agregar_mesa($nombre);
         if ($resultado === 'duplicado') {
             echo json_encode(['success' => false, 'error' => 'duplicado']);

@@ -54,11 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Buscar pedido activo para la mesa
         $pedidoActivo = $consultas->traerPedidosActivosPorMesa($pdo, $mesa_id);
         $pedido_id = null;
+        $estado_actual = null;
+        
         if ($pedido_id_modificar) {
             // Buscar el pedido específico por id
             foreach ($pedidoActivo as $p) {
                 if ((int)$p['idpedidos'] === $pedido_id_modificar) {
                     $pedido_id = $pedido_id_modificar;
+                    $estado_actual = (int)$p['estados_idestados'];
                     break;
                 }
             }
@@ -67,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else if ($pedidoActivo && count($pedidoActivo) > 0) {
             $pedido_id = (int)$pedidoActivo[0]['idpedidos'];
+            $estado_actual = (int)$pedidoActivo[0]['estados_idestados'];
         }
         
         if ($pedido_id) {
@@ -96,6 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 4. Actualizar total del pedido
             $total_actual = $consultas->calcularTotalPedido($pdo, $pedido_id);
             $consultas->actualizarTotalPedido($pdo, $total_actual, $pedido_id);
+            
+            // 5. Si el pedido estaba entregado (estado 4) y se agregaron nuevos productos, 
+            // cambiar el estado a confirmado (3) para que aparezca en la cocina
+            $ids_realmente_nuevos = array_diff($ids_nuevos, $ids_actuales);
+            if ($estado_actual === 4 && !empty($ids_realmente_nuevos)) {
+                $stmt = $pdo->prepare("UPDATE pedidos SET estados_idestados = 3 WHERE idpedidos = ?");
+                $stmt->execute([$pedido_id]);
+                
+                // Marcar solo los productos realmente nuevos
+                $consultas->marcarProductosComoNuevos($pdo, $pedido_id, $ids_realmente_nuevos);
+            }
+            
             echo json_encode([
                 'success' => true,
                 'message' => 'Pedido actualizado correctamente',

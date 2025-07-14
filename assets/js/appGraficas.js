@@ -19,6 +19,14 @@ const noDataPlugin = {
 };
 Chart.register(noDataPlugin);
 
+// Función para generar un color rgba aleatorio
+function randomColor(alpha = 0.7) {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Gráfica de Barras: Ventas por Categoría
     const ventasCategoriaCanvas = document.getElementById('ventasCategoriaChart');
@@ -73,12 +81,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data.length > 0) {
                     const labels = data.data.map(item => item.categoria);
                     const values = data.data.map(item => parseFloat(item.total_ventas));
+                    const bgColors = values.map(() => randomColor(0.7));
+                    const borderColors = bgColors.map(c => c.replace('0.7', '1'));
                     ventasCategoriaChart.data.labels = labels;
                     ventasCategoriaChart.data.datasets[0].data = values;
+                    ventasCategoriaChart.data.datasets[0].backgroundColor = bgColors;
+                    ventasCategoriaChart.data.datasets[0].borderColor = borderColors;
                     ventasCategoriaChart.update();
                 } else {
                     ventasCategoriaChart.data.labels = [];
                     ventasCategoriaChart.data.datasets[0].data = [];
+                    ventasCategoriaChart.data.datasets[0].backgroundColor = [];
+                    ventasCategoriaChart.data.datasets[0].borderColor = [];
                     ventasCategoriaChart.update();
                 }
             })
@@ -136,12 +150,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data.length > 0) {
                     const labels = data.data.map(item => item.producto);
                     const values = data.data.map(item => parseFloat(item.cantidad_vendida));
+                    const bgColors = values.map(() => randomColor(0.7));
+                    const borderColors = bgColors.map(c => c.replace('0.7', '1'));
                     productosVendidosChart.data.labels = labels;
                     productosVendidosChart.data.datasets[0].data = values;
+                    productosVendidosChart.data.datasets[0].backgroundColor = bgColors;
+                    productosVendidosChart.data.datasets[0].borderColor = borderColors;
                     productosVendidosChart.update();
                 } else {
                     productosVendidosChart.data.labels = [];
                     productosVendidosChart.data.datasets[0].data = [];
+                    productosVendidosChart.data.datasets[0].backgroundColor = [];
+                    productosVendidosChart.data.datasets[0].borderColor = [];
                     productosVendidosChart.update();
                 }
             })
@@ -189,12 +209,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data.length > 0) {
                     const labels = data.data.map(item => item.usuarios);
                     const values = data.data.map(item => parseFloat(item.total_ingresos));
+                    const bgColors = values.map(() => randomColor(0.7));
+                    const borderColors = bgColors.map(c => c.replace('0.7', '1'));
                     ingresosEmpleadoChart.data.labels = labels;
                     ingresosEmpleadoChart.data.datasets[0].data = values;
+                    ingresosEmpleadoChart.data.datasets[0].backgroundColor = bgColors;
+                    ingresosEmpleadoChart.data.datasets[0].borderColor = borderColors;
                     ingresosEmpleadoChart.update();
                 } else {
                     ingresosEmpleadoChart.data.labels = [];
                     ingresosEmpleadoChart.data.datasets[0].data = [];
+                    ingresosEmpleadoChart.data.datasets[0].backgroundColor = [];
+                    ingresosEmpleadoChart.data.datasets[0].borderColor = [];
                     ingresosEmpleadoChart.update();
                 }
             })
@@ -242,12 +268,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.data.length > 0) {
                     const labels = data.data.map(item => item.usuario);
                     const values = data.data.map(item => parseInt(item.cantidad_mesas));
+                    const bgColors = values.map(() => randomColor(0.7));
+                    const borderColors = bgColors.map(c => c.replace('0.7', '1'));
                     mesasEmpleadoChart.data.labels = labels;
                     mesasEmpleadoChart.data.datasets[0].data = values;
+                    mesasEmpleadoChart.data.datasets[0].backgroundColor = bgColors;
+                    mesasEmpleadoChart.data.datasets[0].borderColor = borderColors;
                     mesasEmpleadoChart.update();
                 } else {
                     mesasEmpleadoChart.data.labels = [];
                     mesasEmpleadoChart.data.datasets[0].data = [];
+                    mesasEmpleadoChart.data.datasets[0].backgroundColor = [];
+                    mesasEmpleadoChart.data.datasets[0].borderColor = [];
                     mesasEmpleadoChart.update();
                 }
             })

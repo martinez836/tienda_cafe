@@ -18,8 +18,10 @@
 }
 
 #notificacionesStock .alert-warning {
-    background: linear-gradient(135deg, #ffc107, #e0a800);
-    color: #212529;
+    background: linear-gradient(135deg, #fffbe6, #ffe082);
+    color: #856404;
+    border: 1.5px solid #ffe082;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.10);
 }
 
 #notificacionesStock .alert .btn-close {
@@ -97,6 +99,13 @@
 .alert:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.alert-warning, .bg-warning {
+    background: linear-gradient(135deg, #fffbe6, #ffe082) !important;
+    color: #856404 !important;
+    border: 1.5px solid #ffe082 !important;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.10) !important;
 }
 
 /* Responsive para móviles */

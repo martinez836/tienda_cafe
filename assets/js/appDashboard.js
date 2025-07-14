@@ -114,12 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Cargar alertas de stock
             cargarAlertasStock();
             
-            // Iniciar actualización automática cada 2 minutos
-            setInterval(() => {
-                loadDashboardData();
-                cargarAlertasStock();
-            }, 20000); // 20 segundos
-            
             // Configurar gráfico de ventas (placeholder)
             // configurarGraficoVentas(); // Eliminado para evitar datos ficticios
         });

@@ -408,10 +408,17 @@ function confirmarPedido() {
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
+        // Verificar si el pedido fue reactivado (estaba entregado)
+        const mensaje = pedidoIdModificar ? 
+          (data.message.includes('actualizado') ? 
+            'Pedido actualizado correctamente. Si estaba entregado, ahora aparecerá en la cocina.' : 
+            data.message) : 
+          data.message;
+        
         Swal.fire({
           icon: 'success',
           title: 'Pedido registrado',
-          text: data.message,
+          text: mensaje,
         }).then(() => {
           if (usuarioInteractuando()) {
             actualizarPendiente = true;
@@ -505,10 +512,51 @@ function generarTokenMesa() {
   });
 }
 
+// Función para reactivar un pedido entregado
+function reactivarPedidoEntregado(pedidoId) {
+  fetch("../controllers/reactivar_pedido_entregado.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      pedido_id: pedidoId
+    }),
+  })
+  .then((res) => res.json())
+  .then((data) => {
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Pedido reactivado',
+        text: data.message,
+      }).then(() => {
+        // Recargar los pedidos activos
+        cargarPedidosActivosGlobal();
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message,
+      });
+    }
+  })
+  .catch((error) => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo reactivar el pedido.',
+    });
+    console.error(error);
+  });
+}
+
 // Exportar funciones globales para el HTML
 document.addEventListener("DOMContentLoaded", function () {
   window.confirmarPedido = confirmarPedido;
   window.generarTokenMesa = generarTokenMesa;
+  window.reactivarPedidoEntregado = reactivarPedidoEntregado;
   
   // Cargar todos los pedidos activos de todas las mesas al iniciar
   cargarPedidosActivosGlobal();

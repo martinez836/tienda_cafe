@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     loadOrders(tablaPedidos); // Cargar pedidos al cargar la página
-    setInterval(() => loadOrders(tablaPedidos), 30000);
 
     const generarReporteBtn = document.getElementById('generarReporteBtn');
     if (generarReporteBtn) {
