@@ -51,8 +51,9 @@ try {
         <h4 class="text-light opacity-75 mb-0">Sistema de Gestión de Pedidos</h4>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <h2 class="text-light mb-0">usuario: <?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? ''); ?></h2>
-        <button id="btnCerrarSesion" class="btn btn-danger btn-lg" title="Cerrar Sesión">
+        <i class="fa-solid fa-user-check"></i>
+        <h5 class="text-light mb-0"><?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? ''); ?></h5>
+        <button id="btnCerrarSesion" class="btn btn-danger" title="Cerrar Sesión">
           <i class="fas fa-sign-out-alt"></i>
         </button>
       </div>
