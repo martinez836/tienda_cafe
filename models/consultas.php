@@ -77,14 +77,27 @@ class ConsultasMesero
     }
 
     public function guardarDetallePedido($pdo, $detalle, $idPedido) {
-        $stmt = $pdo->prepare("INSERT INTO detalle_pedidos (observaciones, precio_producto, cantidad_producto, subtotal, pedidos_idpedidos, productos_idproductos) VALUES (?, ?, ?, ?, ?, ?)");
+        // Verificar si el producto ya existía en el pedido
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) as existe FROM detalle_pedidos WHERE pedidos_idpedidos = ? AND productos_idproductos = ?");
+        $stmtCheck->execute([$idPedido, $detalle['id']]);
+        $existe = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+        $yaExistia = ($existe && $existe['existe'] > 0);
+
+        // Verificar si el pedido está entregado para marcar el producto como nuevo SOLO si no existía antes
+        $stmtEstado = $pdo->prepare("SELECT estados_idestados FROM pedidos WHERE idpedidos = ?");
+        $stmtEstado->execute([$idPedido]);
+        $pedido = $stmtEstado->fetch(PDO::FETCH_ASSOC);
+        $esProductoNuevo = (!$yaExistia && $pedido && (int)$pedido['estados_idestados'] === 4) ? 1 : 0;
+        
+        $stmt = $pdo->prepare("INSERT INTO detalle_pedidos (observaciones, precio_producto, cantidad_producto, subtotal, pedidos_idpedidos, productos_idproductos, es_producto_nuevo) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $detalle['comentario'],
             $detalle['precio'],
             $detalle['cantidad'],
             $detalle['precio'] * $detalle['cantidad'],
             $idPedido,
-            $detalle['id']
+            $detalle['id'],
+            $esProductoNuevo
         ]);
     }
 
@@ -274,6 +287,74 @@ class ConsultasMesero
         return $stmt->rowCount();
     }
 
+    // PEDIDOS: Cambiar un pedido entregado a confirmado cuando se agregan nuevos productos
+    public function reactivarPedidoEntregado($pdo, $pedido_id) {
+        $stmt = $pdo->prepare("UPDATE pedidos SET estados_idestados = 3 WHERE idpedidos = ? AND estados_idestados = 4");
+        $stmt->execute([$pedido_id]);
+        return $stmt->rowCount();
+    }
+
+    // PEDIDOS: Verificar si un pedido entregado tiene productos nuevos
+    public function tieneProductosNuevos($pdo, $pedido_id) {
+        // Verificar si el pedido está entregado y tiene productos agregados recientemente
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as total_productos 
+            FROM detalle_pedidos 
+            WHERE pedidos_idpedidos = ? 
+            AND fecha_creacion > (
+                SELECT MAX(fecha_actualizacion) 
+                FROM pedidos_estados 
+                WHERE pedidos_idpedidos = ? 
+                AND estados_idestados = 4
+            )
+        ");
+        $stmt->execute([$pedido_id, $pedido_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ($result['total_productos'] ?? 0) > 0;
+    }
+
+    // PEDIDOS: Marcar productos como nuevos cuando se actualiza un pedido entregado
+    public function marcarProductosComoNuevos($pdo, $pedido_id, $productos_ids) {
+        if (empty($productos_ids)) return;
+        
+        $placeholders = str_repeat('?,', count($productos_ids) - 1) . '?';
+        $stmt = $pdo->prepare("
+            UPDATE detalle_pedidos 
+            SET es_producto_nuevo = 1 
+            WHERE pedidos_idpedidos = ? 
+            AND productos_idproductos IN ($placeholders)
+        ");
+        
+        $params = array_merge([$pedido_id], $productos_ids);
+        $stmt->execute($params);
+    }
+
+    // PEDIDOS: Obtener solo productos nuevos de un pedido
+    public function traerProductosNuevos($pdo, $pedido_id) {
+        $stmt = $pdo->prepare("
+            SELECT dp.productos_idproductos as id, 
+                   pr.nombre_producto as nombre, 
+                   dp.cantidad_producto as cantidad, 
+                   dp.precio_producto as precio, 
+                   dp.observaciones as comentario 
+            FROM detalle_pedidos dp 
+            JOIN productos pr ON pr.idproductos = dp.productos_idproductos 
+            WHERE dp.pedidos_idpedidos = ? AND dp.es_producto_nuevo = 1
+        ");
+        $stmt->execute([$pedido_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // PEDIDOS: Limpiar marca de productos nuevos después de prepararlos
+    public function limpiarProductosNuevos($pdo, $pedido_id) {
+        $stmt = $pdo->prepare("
+            UPDATE detalle_pedidos 
+            SET es_producto_nuevo = 0 
+            WHERE pedidos_idpedidos = ?
+        ");
+        $stmt->execute([$pedido_id]);
+    }
+
     // RECUPERACIÓN DE CONTRASEÑA: Validar token de recuperación
     public function validarTokenRecuperacion($pdo, $correo, $codigo) {
         $stmt = $pdo->prepare("SELECT * FROM recuperacion WHERE correo_recuperacion = ? AND codigo_recuperacion = ?");
@@ -315,6 +396,23 @@ class ConsultasMesero
             LIMIT 1");
         $stmt->execute([$mesaId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // AGREGAR MESA
+    public function agregar_mesa($nombre) {
+        // Verificar si ya existe una mesa activa con ese nombre
+        $sqlCheck = "SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1";
+        $paramsCheck = [$nombre];
+        $stmt = $this->mysql->ejecutarSentenciaPreparada($sqlCheck, 's', $paramsCheck);
+        $row = $stmt->fetch();
+        if ($row && isset($row['total']) && $row['total'] > 0) {
+            return 'duplicado';
+        }
+        // Insertar la nueva mesa
+        $sql = "INSERT INTO mesas (nombre, estados_idestados) VALUES (?, 1)";
+        $params = [$nombre];
+        $this->mysql->ejecutarSentenciaPreparada($sql, 's', $params);
+        return true;
     }
 }
 

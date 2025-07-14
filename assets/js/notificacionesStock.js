@@ -9,7 +9,7 @@ class NotificacionesStock {
     init() {
         this.crearContenedorNotificaciones();
         this.verificarStockInicial();
-        this.iniciarVerificacionPeriodica();
+        // this.iniciarVerificacionPeriodica(); // Eliminado para quitar notificación periódica
         this.configurarEventos();
     }
 
@@ -37,11 +37,11 @@ class NotificacionesStock {
         }
     }
 
-    iniciarVerificacionPeriodica() {
-        setInterval(() => {
-            this.verificarStockInicial();
-        }, this.intervaloVerificacion);
-    }
+    // iniciarVerificacionPeriodica() {
+    //     setInterval(() => {
+    //         this.verificarStockInicial();
+    //     }, this.intervaloVerificacion);
+    // }
 
     async obtenerProductosBajoStock() {
         const response = await fetch(`../../controllers/admin/productos.php?action=getProductosBajoStock`);

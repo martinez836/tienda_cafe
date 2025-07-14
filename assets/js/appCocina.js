@@ -154,10 +154,26 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
         `).join('');
 
+        // Determinar el tipo de pedido y el mensaje correspondiente
+        let tipoPedido = '';
+        let mensajeAdicional = '';
+        
+        if (pedido.tiene_productos_nuevos) {
+            tipoPedido = '<span class="badge rounded-pill bg-warning text-dark me-2">Productos Nuevos</span>';
+            mensajeAdicional = '<div class="alert alert-info mt-2"><i class="fas fa-info-circle me-2"></i>Este pedido contiene solo los productos nuevos agregados. Los productos ya entregados no se mostrarán.</div>';
+        } else {
+            tipoPedido = '<span class="badge rounded-pill bg-info me-2">Pedido Completo</span>';
+        }
+
         detalles_pedido.innerHTML = `
-            <h5 class="mb-3">Pedido #${pedido.idpedidos} - ${pedido.nombre_mesa} <span class="badge rounded-pill bg-info insignia-estado insignia-preparacion">En Preparación</span></h5>
+            <h5 class="mb-3">
+                Pedido #${pedido.idpedidos} - ${pedido.nombre_mesa} 
+                ${tipoPedido}
+                <span class="badge rounded-pill bg-info insignia-estado insignia-preparacion">En Preparación</span>
+            </h5>
             <p class="text-muted">Hora de Pedido: ${pedido.time}</p>
-            <h6>Items:</h6>
+            ${mensajeAdicional}
+            <h6>Items a preparar:</h6>
             <ul class="list-group mb-4">
                 ${htmlItems}
             </ul>

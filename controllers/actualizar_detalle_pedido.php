@@ -13,13 +13,17 @@ try {
     $comentario = isset($data['comentario']) ? $data['comentario'] : null;
     $cantidad = (int)$data['cantidad'];
     $pdo = config::conectar();
-    // Verificar que el pedido esté activo o confirmado
+    
+    // Verificar que el pedido esté activo, confirmado o entregado
     $stmt = $pdo->prepare('SELECT estados_idestados FROM pedidos WHERE idpedidos = ?');
     $stmt->execute([$pedido_id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$row || ($row['estados_idestados'] != 1 && $row['estados_idestados'] != 3)) {
-        throw new Exception('El pedido no está activo ni confirmado');
+    if (!$row || ($row['estados_idestados'] != 1 && $row['estados_idestados'] != 3 && $row['estados_idestados'] != 4)) {
+        throw new Exception('El pedido no está activo, confirmado ni entregado');
     }
+    
+    $estado_actual = (int)$row['estados_idestados'];
+    
     // Buscar el detalle
     $stmt = $pdo->prepare('SELECT iddetalle_pedidos, cantidad_producto FROM detalle_pedidos WHERE pedidos_idpedidos = ? AND productos_idproductos = ? AND observaciones '.($comentario === null ? 'IS NULL' : '= ?'));
     $params = [$pedido_id, $producto_id];
@@ -39,6 +43,13 @@ try {
         // Actualizar total del pedido
         $stmtTotal = $pdo->prepare('UPDATE pedidos SET total_pedido = (SELECT SUM(subtotal) FROM detalle_pedidos WHERE pedidos_idpedidos = ?) WHERE idpedidos = ?');
         $stmtTotal->execute([$pedido_id, $pedido_id]);
+        
+        // Si el pedido estaba entregado (estado 4), cambiar a confirmado (3) para que aparezca en la cocina
+        if ($estado_actual === 4) {
+            $stmtEstado = $pdo->prepare('UPDATE pedidos SET estados_idestados = 3 WHERE idpedidos = ?');
+            $stmtEstado->execute([$pedido_id]);
+        }
+        
         echo json_encode(['success' => true]);
     } else {
         throw new Exception('Detalle de producto no encontrado en el pedido');
