@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productosVendidosCanvas) {
         const productosVendidosCtx = productosVendidosCanvas.getContext('2d');
         productosVendidosChart = new Chart(productosVendidosCtx, {
-            type: 'pie',
+            type: 'bar',
             data: {
                 labels: [],
                 datasets: [{

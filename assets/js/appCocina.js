@@ -252,7 +252,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             'El pedido ha sido marcado como preparado.',
                             'success'
                         );
-                        obtenerPedidosPendientes(); // Actualizar la lista
+                        obtenerPedidosPendientes();
+                        detalles_pedido.innerHTML = ""; // Actualizar la lista
                     } else {
                         Swal.fire(
                             'Error!',
