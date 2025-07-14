@@ -2,6 +2,8 @@
 require_once '../models/consultas.php';
 require_once '../config/config.php';
 require_once '../config/security.php';
+// Inicio de sesión
+session_name('cafe_session');
 session_start();
 
 // Establecer la zona horaria para Colombia
@@ -11,7 +13,7 @@ header('Content-Type: application/json');
 
 try {
     $mesa_id = null;
-    
+
     // Procesar diferentes tipos de solicitudes
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Cancelar token por ID
@@ -23,7 +25,7 @@ try {
             echo json_encode(['success' => true, 'message' => 'Token cancelado']);
             exit;
         }
-        
+
         // Cancelar token por valor
         if (isset($_POST['cancelar_token_por_valor'])) {
             $token = SecurityUtils::sanitizeToken($_POST['cancelar_token_por_valor']);
@@ -33,7 +35,7 @@ try {
             echo json_encode(['success' => true, 'message' => 'Token cancelado']);
             exit;
         }
-        
+
         // Obtener tokens activos
         if (isset($_POST['activos'])) {
             $pdo = config::conectar();
@@ -42,37 +44,37 @@ try {
             echo json_encode(['success' => true, 'tokens' => $tokens]);
             exit;
         }
-        
+
         // Generar token para mesa específica
         if (isset($_POST['mesa_id'])) {
             $mesa_id = SecurityUtils::sanitizeId($_POST['mesa_id'], 'ID de mesa');
         }
     }
-    
+
     // Procesar solicitudes GET
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['mesa_id'])) {
         $mesa_id = SecurityUtils::sanitizeId($_GET['mesa_id'], 'ID de mesa');
     }
-    
+
     // Procesar solicitudes JSON
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
-        
+
         if (isset($data['mesa'])) {
             $mesa_id = SecurityUtils::sanitizeId($data['mesa'], 'ID de mesa');
         } elseif (isset($data['mesa_id'])) {
             $mesa_id = SecurityUtils::sanitizeId($data['mesa_id'], 'ID de mesa');
         }
     }
-    
+
     if (!$mesa_id) {
         throw new Exception('Mesa no especificada');
     }
-    
+
     $pdo = config::conectar();
     $consultas = new ConsultasMesero();
-    
+
     // Usar el usuario de la sesión
     if (!isset($_SESSION['usuario_id'])) {
         throw new Exception('Sesión de usuario no encontrada. Por favor, inicie sesión nuevamente.');
@@ -92,4 +94,4 @@ try {
     echo json_encode(['success' => true, 'token' => $token, 'expira' => $expiracion]);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-} 
+}

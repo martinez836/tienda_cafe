@@ -161,8 +161,8 @@ saveMesaBtn.addEventListener('click', () => {
 
     // Si hay id, editar; si no, agregar
     const url = id
-        ? '/Cafe/controllers/editar_mesa.php'
-        : '/Cafe/controllers/agregar_mesa.php';
+        ? '/tienda_cafe/controllers/editar_mesa.php'
+        : '/tienda_cafe/controllers/agregar_mesa.php';
 
     const body = id
         ? `id=${encodeURIComponent(id)}&nombre=${encodeURIComponent(nombre)}`
