@@ -68,11 +68,6 @@ verificarAdmin();
                 </a>
             </li>
             <li class="nav-item">
-                    <a class="nav-link" href="balanceGeneral.php">
-                    <i class="fa-solid fa-file-pdf"></i>Balance
-                    </a>
-                </li>
-            <li class="nav-item">
                 <a class="nav-link" href="graficas.php">
                     <i class="fas fa-chart-bar me-2"></i>Gráficas
                 </a>
@@ -104,11 +99,6 @@ verificarAdmin();
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="gestion_mesas.php">
-                        <i class="fas fa-chair me-2"></i>Gestión Mesas
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="pedidos.php">
                         <i class="fas fa-receipt me-2"></i>Ventas
                     </a>
@@ -135,7 +125,15 @@ verificarAdmin();
                 <i class="fas fa-table me-2"></i>Lista de Usuarios
             </div>
             <div class="card-body">
-                <button id="btnCrearUsuario" class="btn btn-primary">Crear Usuario </button>
+                <button id="btnCrearUsuario" class="btn btn-primary mb-3 ms-2">
+                    <i class="fa-solid fa-plus me-2"></i>Crear
+                </button>
+                <button class="btn btn-success mb-3 ms-2" id="generarReporteBtn">
+                <i class="fa-solid fa-file-pdf me-2"></i>Generar Reporte PDF
+                </button>
+                <button class="btn btn-info mb-3 ms-2" id="verHistorialBtn">
+                <i class="fa-solid fa-history me-2"></i>Ver Historial
+                </button>
                 <div class="table">
                     <table class="table table-striped table-hover" id="tablaUsuarios">
                         <thead>

@@ -29,7 +29,7 @@ const llenarTablaMesas = () =>{
                 2: { label: 'Inactivo', badge: 'bg-secondary' }
             };
         
-        data.forEach(mesa => {
+        data.mesas.forEach(mesa => {
             const fila = document.createElement('tr');
 
             // Elegimos la configuración según el id, o un defecto

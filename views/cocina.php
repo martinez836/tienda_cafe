@@ -27,8 +27,8 @@ if ($_SESSION['usuario_rol'] !== 'Cocina' && $_SESSION['usuario_rol'] !== 'Admin
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cocina - Tienda de Café</title>
-    <link href="/Cafe/assets/cssBootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/Cafe/assets/css/estiloCocina.css">
+    <link href="../assets/cssBootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/estiloCocina.css">
 </head>
 <body>
     <div class="header">
@@ -86,9 +86,8 @@ if ($_SESSION['usuario_rol'] !== 'Cocina' && $_SESSION['usuario_rol'] !== 'Admin
         </div>
     </div>
 
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/Cafe/assets/jsBootstrap/bootstrap.bundle.min.js"></script>
-    <script src="/Cafe/assets/js/appCocina.js"></script>
+    <script src="../assets/jsBootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/appCocina.js"></script>
 </body>
 </html> 

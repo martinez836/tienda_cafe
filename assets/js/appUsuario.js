@@ -295,3 +295,44 @@ function showSwalError(msg) {
         confirmButtonText: 'Aceptar'
     });
 }
+
+// Evento para generar reporte de empleados
+const botonGenerarReporte = document.getElementById('generarReporteBtn');
+if (botonGenerarReporte) {
+    botonGenerarReporte.addEventListener('click', () => {
+        Swal.fire({
+            title: 'Generando Reporte',
+            text: 'El reporte se está generando, por favor espere...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        fetch('../../controllers/admin/reporteEmpleado.php')
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Reporte Generado!',
+                        text: 'El reporte se ha generado exitosamente',
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonText: 'Descargar',
+                        cancelButtonText: 'Cerrar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Descargar el archivo
+                            window.open('../../controllers/admin/descargarReporte.php?filename=' + data.filename, '_blank');
+                        }
+                    });
+                } else {
+                    Swal.fire('Error', data.message || 'Error al generar el reporte', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire('Error', 'Error al generar el reporte: ' + error.message, 'error');
+            });
+    });
+}
