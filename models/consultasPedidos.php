@@ -105,6 +105,25 @@ class ConsultasPedidos
         }
     }
     
+    public function getEmpleadosPorIngresos() {
+        try {
+            $sql = "
+                SELECT 
+                    u.nombre_usuario AS empleado,
+                    COUNT(p.idpedidos) AS cantidad_ventas,
+                    SUM(p.total_pedido) AS total_generado
+                FROM pedidos p
+                JOIN usuarios u ON p.usuarios_idusuarios = u.idusuarios
+                WHERE p.total_pedido IS NOT NULL
+                GROUP BY u.idusuarios
+                ORDER BY total_generado DESC;
+            ";
+            return $this->mysql->efectuarConsulta($sql);
+        } catch (Exception $e) {
+            error_log('Error getEmpleadosPorIngresos: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
 
 ?>

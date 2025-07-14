@@ -19,7 +19,7 @@ class consultasCajero
                 p.idpedidos,
                 p.fecha_hora_pedido,
                 m.nombre AS nombre_mesa,
-                u.nombre_usuario, 
+                u.nombre_usuario,
                 dp.precio_producto,
                 dp.cantidad_producto,
                 dp.subtotal,

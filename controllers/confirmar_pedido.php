@@ -3,6 +3,12 @@ require_once '../config/config.php';
 require_once '../models/consultas.php';
 require_once '../config/security.php';
 
+// Iniciar sesión si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('cafe_session');
+    session_start();
+}
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -115,7 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // No hay pedido activo, crear uno nuevo
             $pdo->beginTransaction();
             try {
-                $pedido_id = $consultas->confirmarPedidoCliente($pdo, $mesa_id, $productos_sanitizados, $token_utilizado);
+                // Obtener el id del usuario de la sesión
+                if (!isset($_SESSION['usuario_id'])) {
+                    throw new Exception('Sesión de usuario no encontrada. Por favor, inicie sesión nuevamente.');
+                }
+                $usuario_id = (int)$_SESSION['usuario_id'];
+                $pedido_id = $consultas->confirmarPedidoCliente($pdo, $mesa_id, $productos_sanitizados, $token_utilizado, $usuario_id);
                 $pdo->commit();
                 echo json_encode([
                     'success' => true,

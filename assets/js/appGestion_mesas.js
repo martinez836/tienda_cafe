@@ -54,11 +54,11 @@ const llenarTablaMesas = () =>{
         mesasTableBody.innerHTML = '';
 
         // Mapa de estados → etiqueta y clase de badge
-        const estadoConfig = {
-            1: { label: 'Activo', badge: 'bg-success' },
-            2: { label: 'Inactivo', badge: 'bg-secondary' }
-        };
-
+            const estadoConfig = {
+                1: { label: 'Activo', badge: 'bg-success' },
+                2: { label: 'Inactivo', badge: 'bg-secondary' }
+            };
+        
         data.mesas.forEach(mesa => {
             const fila = document.createElement('tr');
 

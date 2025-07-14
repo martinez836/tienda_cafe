@@ -67,11 +67,6 @@ verificarAdmin();
                 </a>
             </li>
             <li class="nav-item">
-                    <a class="nav-link" href="balanceGeneral.php">
-                        <i class="fa-solid fa-file-pdf"></i>Balance
-                    </a>
-                </li>
-            <li class="nav-item">
                 <a class="nav-link active" href="graficas.php">
                     <i class="fas fa-chart-bar me-2"></i>Gráficas
                 </a>
@@ -113,11 +108,6 @@ verificarAdmin();
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="balanceGeneral.php">
-                        <i class="fa-solid fa-file-pdf"></i>Balance
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link active" href="graficas.php">
                         <i class="fas fa-chart-bar me-2"></i>Gráficas
                     </a>
@@ -127,7 +117,7 @@ verificarAdmin();
     </div>
 
     <div class="content">
-        <h2 class="mb-4">Gráficas y Reportes</h2>
+        <h2 class="mb-4">Gráficas  Reortes</h2>
 
         <div class="row">
             <div class="col-lg-6 mb-4">
