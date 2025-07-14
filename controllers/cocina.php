@@ -24,12 +24,18 @@ switch ($accion) {
                         'observations' => trim($coincidencias['observaciones'] ?? '')
                     ];
                 }
+                
+                // Agregar información sobre si son productos nuevos
+                $esProductosNuevos = $fila['tipo_pedido'] === 'productos_nuevos';
+                
                 $pedidosFormateados[] = [
                     'id' => $fila['idpedidos'],
                     'table' => $fila['nombre_mesa'],
                     'time' => date('H:i A', strtotime($fila['fecha_hora_pedido'])),
                     'status' => ($fila['status_id'] == 1) ? 'pending' : 'unknown', // Asumiendo que 1 es pendiente
-                    'items' => $items
+                    'items' => $items,
+                    'es_productos_nuevos' => $esProductosNuevos,
+                    'tipo_pedido' => $fila['tipo_pedido']
                 ];
             }
         }
