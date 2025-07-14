@@ -15,7 +15,7 @@ try {
     foreach ($mesas as $mesa) {
         // Obtener pedidos activos de la mesa, ahora con JOIN a estados
         $stmt = $pdo->prepare("
-            SELECT p.idpedidos, p.fecha_hora_pedido, p.total_pedido, p.token_utilizado, p.estados_idestados, e.estado as estado_nombre
+            SELECT p.idpedidos, p.fecha_hora_pedido, p.total_pedido, p.token_utilizado, p.estados_idestados, e.estado as estado_nombre, p.usuarios_idusuarios
             FROM pedidos p
             INNER JOIN detalle_pedidos dp ON dp.pedidos_idpedidos = p.idpedidos
             LEFT JOIN tokens_mesa t ON t.token = p.token_utilizado
@@ -40,7 +40,8 @@ try {
                 'mesa_nombre' => $mesa['nombre'],
                 'pedido_id' => $pedido['idpedidos'],
                 'productos' => $detalles,
-                'estado_nombre' => $pedido['estado_nombre']
+                'estado_nombre' => $pedido['estado_nombre'],
+                'usuario_id' => $pedido['usuarios_idusuarios']
             ];
         }
     }

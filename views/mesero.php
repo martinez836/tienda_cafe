@@ -41,7 +41,7 @@ try {
   <link rel="stylesheet" href="../assets/css/estiloMesero.css" />
 </head>
 
-<body class="bg-coffee">
+<body class="bg-coffee" data-usuario-id="<?php echo htmlspecialchars($_SESSION['usuario_id']); ?>">
   <div class="container py-4">
     <header class="text-center mb-5 d-flex justify-content-between align-items-center">
       <div>
@@ -70,14 +70,16 @@ try {
               <select id="mesaSelect" class="form-select form-select-lg rounded-3">
                 <option value="">Seleccione una mesa</option>
                 <?php 
-                if ($mesas && is_array($mesas)) {
+                if (
+                    $mesas && is_array($mesas)) {
                     foreach ($mesas as $mesa) {
-                        $deshabilitar = ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0 || $mesa['tiene_token_activo'] > 0);
-                        $disabled = $deshabilitar ? 'disabled' : '';
-                        $msg = $mesa['tiene_pedido_confirmado'] > 0 ? ' (Confirmado)' : ($mesa['tiene_pedido_entregado'] > 0 ? ' (Entregado)' : '');
+                        // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
+                        if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
+                            continue;
+                        }
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
                         $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
-                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '" ' . $disabled . '>' . htmlspecialchars($mesa['nombre']) . $token . $msg . '</option>';
+                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . '</option>';
                     }
                 }
                 ?>
