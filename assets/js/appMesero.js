@@ -720,37 +720,51 @@ function cargarPedidosActivosGlobal() {
       const cont = document.getElementById("pedidosActivosMesa");
       if (!cont) return;
       window.pedidosActivosGlobal = {};
+      // Obtener el id del usuario en sesión
+      let usuarioIdSesion = window.usuarioIdSesion;
+      if (!usuarioIdSesion) {
+        // Intenta obtenerlo de un atributo data-usuario-id en el body o en un div principal
+        const body = document.body;
+        usuarioIdSesion = body.getAttribute('data-usuario-id') || null;
+        if (usuarioIdSesion) window.usuarioIdSesion = usuarioIdSesion;
+      }
       if (data.success && data.pedidos && data.pedidos.length > 0) {
-        let html = '<div class="accordion" id="accordionPedidosActivos">';
-        data.pedidos.forEach((pedido, idx) => {
-          window.pedidosActivosGlobal[pedido.mesa_id] = pedido;
-          html += `
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading${pedido.pedido_id}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${pedido.pedido_id}" aria-expanded="false" aria-controls="collapse${pedido.pedido_id}">
-                  <strong>${pedido.mesa_nombre || pedido.mesa_id}</strong> 
-                </button>
-              </h2>
-              <div id="collapse${pedido.pedido_id}" class="accordion-collapse collapse" aria-labelledby="heading${pedido.pedido_id}" data-bs-parent="#accordionPedidosActivos">
-                <div class="accordion-body">
-                  <div><strong>Pedido #:</strong> ${pedido.pedido_id}</div>
-                  <div><strong>Productos:</strong><ul class='mb-1'>`;
-          pedido.productos.forEach(prod => {
-            html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})</li>`;
-          });
-          html += `</ul></div>
-                  <div><strong>Total:</strong> $${pedido.productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0).toFixed(2)}</div>
-                  <div class="d-flex justify-content-between align-items-center mt-2">
-                    <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>Modificar pedido</button>
-                    <span class="badge bg-info text-dark ms-2">${pedido.estado_nombre || 'Desconocido'}</span>
+        // Filtrar solo los pedidos hechos por el usuario en sesión
+        const pedidosFiltrados = usuarioIdSesion ? data.pedidos.filter(p => String(p.usuario_id) === String(usuarioIdSesion)) : data.pedidos;
+        if (pedidosFiltrados.length > 0) {
+          let html = '<div class="accordion" id="accordionPedidosActivos">';
+          pedidosFiltrados.forEach((pedido, idx) => {
+            window.pedidosActivosGlobal[pedido.mesa_id] = pedido;
+            html += `
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading${pedido.pedido_id}">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${pedido.pedido_id}" aria-expanded="false" aria-controls="collapse${pedido.pedido_id}">
+                    <strong>${pedido.mesa_nombre || pedido.mesa_id}</strong> 
+                  </button>
+                </h2>
+                <div id="collapse${pedido.pedido_id}" class="accordion-collapse collapse" aria-labelledby="heading${pedido.pedido_id}" data-bs-parent="#accordionPedidosActivos">
+                  <div class="accordion-body">
+                    <div><strong>Pedido #:</strong> ${pedido.pedido_id}</div>
+                    <div><strong>Productos:</strong><ul class='mb-1'>`;
+            pedido.productos.forEach(prod => {
+              html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})</li>`;
+            });
+            html += `</ul></div>
+                    <div><strong>Total:</strong> $${pedido.productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0).toFixed(2)}</div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                      <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>Modificar pedido</button>
+                      <span class="badge bg-info text-dark ms-2">${pedido.estado_nombre || 'Desconocido'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
-        });
-        html += '</div>';
-        cont.innerHTML = html;
+            `;
+          });
+          html += '</div>';
+          cont.innerHTML = html;
+        } else {
+          cont.innerHTML = '<div class="text-muted">No hay pedidos activos.</div>';
+        }
       } else {
         cont.innerHTML = '<div class="text-muted">No hay pedidos activos.</div>';
       }
