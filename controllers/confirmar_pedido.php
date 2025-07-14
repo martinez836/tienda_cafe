@@ -78,45 +78,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $productos_actuales = $consultas->traerDetallePedido($pdo, $pedido_id);
             $ids_actuales = array_map(function($p) { return $p['id']; }, $productos_actuales);
             $ids_nuevos = array_map(function($p) { return $p['id']; }, $productos_sanitizados);
-            
-            // 2. Eliminar productos que ya no están en el nuevo pedido
-            foreach ($ids_actuales as $id_existente) {
-                if (!in_array($id_existente, $ids_nuevos)) {
-                    $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedidos_idpedidos = ? AND productos_idproductos = ?");
-                    $stmt->execute([$pedido_id, $id_existente]);
+
+            if ($estado_actual === 4) {
+                // Estado entregado: solo permitir agregar productos nuevos
+                // No eliminar ni modificar productos existentes
+                foreach ($productos_sanitizados as $producto) {
+                    if (!in_array($producto['id'], $ids_actuales)) {
+                        $consultas->guardarDetallePedido($pdo, $producto, $pedido_id);
+                    }
                 }
-            }
-            
-            // 3. Para cada producto recibido:
-            foreach ($productos_sanitizados as $producto) {
-                $detalleExistente = $consultas->traerDetallePedidoPorProducto($pdo, $pedido_id, $producto['id']);
-                if ($detalleExistente) {
-                    $consultas->actualizarCantidadDetallePedido($pdo, $pedido_id, $producto['id'], $producto['cantidad']);
-                } else {
-                    $consultas->guardarDetallePedido($pdo, $producto, $pedido_id);
+                // Actualizar total del pedido
+                $total_actual = $consultas->calcularTotalPedido($pdo, $pedido_id);
+                $consultas->actualizarTotalPedido($pdo, $total_actual, $pedido_id);
+                // Cambiar estado a confirmado si se agregaron productos nuevos
+                $ids_realmente_nuevos = array_diff($ids_nuevos, $ids_actuales);
+                if (!empty($ids_realmente_nuevos)) {
+                    $stmt = $pdo->prepare("UPDATE pedidos SET estados_idestados = 3 WHERE idpedidos = ?");
+                    $stmt->execute([$pedido_id]);
+                    $consultas->marcarProductosComoNuevos($pdo, $pedido_id, $ids_realmente_nuevos);
                 }
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Solo se agregaron productos nuevos al pedido entregado',
+                    'pedido_id' => $pedido_id
+                ]);
+            } else {
+                // Estado confirmado: permitir modificar y eliminar productos
+                // Eliminar productos que ya no están en el nuevo pedido
+                foreach ($ids_actuales as $id_existente) {
+                    if (!in_array($id_existente, $ids_nuevos)) {
+                        $stmt = $pdo->prepare("DELETE FROM detalle_pedidos WHERE pedidos_idpedidos = ? AND productos_idproductos = ?");
+                        $stmt->execute([$pedido_id, $id_existente]);
+                    }
+                }
+                // Para cada producto recibido:
+                foreach ($productos_sanitizados as $producto) {
+                    $detalleExistente = $consultas->traerDetallePedidoPorProducto($pdo, $pedido_id, $producto['id']);
+                    if ($detalleExistente) {
+                        $consultas->actualizarCantidadDetallePedido($pdo, $pedido_id, $producto['id'], $producto['cantidad']);
+                    } else {
+                        $consultas->guardarDetallePedido($pdo, $producto, $pedido_id);
+                    }
+                }
+                // Actualizar total del pedido
+                $total_actual = $consultas->calcularTotalPedido($pdo, $pedido_id);
+                $consultas->actualizarTotalPedido($pdo, $total_actual, $pedido_id);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Pedido actualizado correctamente',
+                    'pedido_id' => $pedido_id
+                ]);
             }
-            
-            // 4. Actualizar total del pedido
-            $total_actual = $consultas->calcularTotalPedido($pdo, $pedido_id);
-            $consultas->actualizarTotalPedido($pdo, $total_actual, $pedido_id);
-            
-            // 5. Si el pedido estaba entregado (estado 4) y se agregaron nuevos productos, 
-            // cambiar el estado a confirmado (3) para que aparezca en la cocina
-            $ids_realmente_nuevos = array_diff($ids_nuevos, $ids_actuales);
-            if ($estado_actual === 4 && !empty($ids_realmente_nuevos)) {
-                $stmt = $pdo->prepare("UPDATE pedidos SET estados_idestados = 3 WHERE idpedidos = ?");
-                $stmt->execute([$pedido_id]);
-                
-                // Marcar solo los productos realmente nuevos
-                $consultas->marcarProductosComoNuevos($pdo, $pedido_id, $ids_realmente_nuevos);
-            }
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Pedido actualizado correctamente',
-                'pedido_id' => $pedido_id
-            ]);
         } else {
             // No hay pedido activo, crear uno nuevo
             $pdo->beginTransaction();
@@ -126,6 +138,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new Exception('Sesión de usuario no encontrada. Por favor, inicie sesión nuevamente.');
                 }
                 $usuario_id = (int)$_SESSION['usuario_id'];
+                
+                // Al crear un nuevo pedido, usar el estado recibido si existe
+                $nuevo_estado = isset($data['nuevo_estado']) ? (int)$data['nuevo_estado'] : 3;
+                
                 $pedido_id = $consultas->confirmarPedidoCliente($pdo, $mesa_id, $productos_sanitizados, $token_utilizado, $usuario_id);
                 $pdo->commit();
                 echo json_encode([

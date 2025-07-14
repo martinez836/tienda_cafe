@@ -174,6 +174,9 @@ try {
             <button class="btn btn-success w-100" onclick="confirmarPedido()">
               <i class="fas fa-check me-2"></i>Confirmar Pedido
             </button>
+            <button id="btnCancelarPedido" class="btn btn-danger w-100 mt-2 d-none" onclick="cancelarPedidoActual()">
+              <i class="fas fa-times me-2"></i>Cancelar Pedido
+            </button>
           </div>
         </div>
 
@@ -229,5 +232,19 @@ try {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/appMesero.js"></script>
+  <script>
+    // Mostrar/ocultar el botón de cancelar pedido según el estado
+    function actualizarBotonCancelarPedido(estadoPedido) {
+      const btn = document.getElementById('btnCancelarPedido');
+      if (!btn) return;
+      if (estadoPedido === 3) {
+        btn.classList.remove('d-none');
+      } else {
+        btn.classList.add('d-none');
+      }
+    }
+    // Llamar esta función desde JS cada vez que se cargue/modifique el pedido actual
+    window.actualizarBotonCancelarPedido = actualizarBotonCancelarPedido;
+  </script>
 </body>
 </html>

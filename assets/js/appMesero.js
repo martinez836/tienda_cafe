@@ -402,7 +402,8 @@ function confirmarPedido() {
       mesa_id: parseInt(mesa),
       productos: pedido,
       total: total,
-      pedido_id: pedidoIdModificar
+      pedido_id: pedidoIdModificar,
+      nuevo_estado: (pedidoIdModificar && window.pedidoCanceladoParaModificar) ? 2 : undefined
     }),
   })
     .then((res) => res.json())
@@ -572,9 +573,10 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
     nombre: prod.nombre,
     cantidad: parseInt(prod.cantidad),
     comentario: prod.comentario,
-    precio: parseFloat(prod.precio)
+    precio: parseFloat(prod.precio),
+    estado: pedidoObj.estado_nombre // Guardar el estado textual
   }));
-  actualizarLista();
+  actualizarLista(pedidoObj.estados_idestados);
   // Resaltar el pedido que se está editando
   document.querySelectorAll('#pedidosActivosMesa .border').forEach(div => div.classList.remove('border-primary'));
   const divPedido = document.getElementById('pedidoActivo_' + pedidoId);
@@ -583,6 +585,266 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
   const mesaSelect = document.getElementById('mesaSelect');
   if (mesaSelect) mesaSelect.value = mesaId;
   pedidoIdModificar = pedidoId;
+  window.estadoPedidoActual = pedidoObj.estados_idestados; // Guardar estado numérico global
+  actualizarBotonCancelarPedido(window.estadoPedidoActual);
+}
+
+// Modifico actualizarLista para deshabilitar edición si estadoPedidoActual === 4
+function actualizarLista(estadoPedido) {
+  const lista = document.getElementById("pedidoLista");
+  lista.innerHTML = "";
+  let total = 0;
+  const esEntregado = (typeof estadoPedido !== 'undefined' ? estadoPedido : window.estadoPedidoActual) === 4;
+
+  pedido.forEach((item, index) => {
+    const subtotal = item.precio * item.cantidad;
+    total += subtotal;
+    lista.innerHTML += `
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>${item.nombre}</strong>
+          <br>
+          <small class="text-muted">${item.comentario || "sin obs."}</small>
+          <br>
+          <small>$${item.precio.toFixed(2)} x ${item.cantidad}</small>
+        </div>
+        <div class="text-end">
+          <div class="mb-2">$${subtotal.toFixed(2)}</div>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="cambiarCantidad(${index}, -1)" ${esEntregado ? 'disabled' : ''}>-</button>
+            <button class="btn btn-sm btn-secondary" onclick="cambiarCantidad(${index}, 1)" ${esEntregado ? 'disabled' : ''}>+</button>
+            <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${index})" ${esEntregado ? 'disabled' : ''}>x</button>
+          </div>
+        </div>
+      </li>`;
+  });
+  // Agregar el total al final de la lista
+  lista.innerHTML += `
+    <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+      <strong>Total</strong>
+      <strong>$${total.toFixed(2)}</strong>
+    </li>`;
+  if (typeof estadoPedido !== 'undefined' || typeof window.estadoPedidoActual !== 'undefined') {
+    actualizarBotonCancelarPedido(typeof estadoPedido !== 'undefined' ? estadoPedido : window.estadoPedidoActual);
+  }
+}
+
+// Modifico cambiarCantidad y eliminarProducto para advertir si es entregado
+function cambiarCantidad(index, delta) {
+  if ((window.estadoPedidoActual === 4)) {
+    Swal.fire({
+      icon: 'info',
+      title: 'No permitido',
+      text: 'No puedes modificar productos en un pedido entregado. Solo puedes agregar nuevos productos.'
+    });
+    return;
+  }
+  // Solo permitir incrementar si no supera el stock
+  if (delta > 0) {
+    const item = pedido[index];
+    if (item.stock !== undefined && item.cantidad + 1 > item.stock) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Stock insuficiente',
+        text: 'No puedes agregar más que el stock disponible.',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+  }
+  pedido[index].cantidad += delta;
+  if (pedido[index].cantidad <= 0) {
+    eliminarProducto(index);
+    return;
+  }
+  actualizarCantidadEnBD(index, pedido[index].cantidad);
+  actualizarLista();
+}
+function eliminarProducto(index) {
+  if ((window.estadoPedidoActual === 4)) {
+    Swal.fire({
+      icon: 'info',
+      title: 'No permitido',
+      text: 'No puedes eliminar productos en un pedido entregado. Solo puedes agregar nuevos productos.'
+    });
+    return;
+  }
+  actualizarCantidadEnBD(index, 0);
+  pedido.splice(index, 1);
+  actualizarLista();
+}
+
+function confirmarPedido() {
+  const mesa = document.getElementById("mesaSelect").value;
+  const mesaSelect = document.getElementById("mesaSelect");
+  const mesaNombre = mesaSelect.options[mesaSelect.selectedIndex].text;
+
+  if (!mesa) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Mesa no seleccionada',
+      text: 'Por favor, seleccione una mesa antes de confirmar el pedido.',
+    });
+    return;
+  }
+
+  if (pedido.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin productos',
+      text: 'Agrega al menos un producto al pedido.',
+    });
+    return;
+  }
+
+  // Calcular el total del pedido
+  const total = pedido.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+
+  fetch("../controllers/confirmar_pedido.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      mesa_id: parseInt(mesa),
+      productos: pedido,
+      total: total,
+      pedido_id: pedidoIdModificar,
+      nuevo_estado: (pedidoIdModificar && window.pedidoCanceladoParaModificar) ? 2 : undefined
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        // Verificar si el pedido fue reactivado (estaba entregado)
+        const mensaje = pedidoIdModificar ? 
+          (data.message.includes('actualizado') ? 
+            'Pedido actualizado correctamente. Si estaba entregado, ahora aparecerá en la cocina.' : 
+            data.message) : 
+          data.message;
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Pedido registrado',
+          text: mensaje,
+        }).then(() => {
+          if (usuarioInteractuando()) {
+            actualizarPendiente = true;
+          } else {
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          }
+          pedido = [];
+          pedidoIdModificar = null;
+          actualizarLista();
+          // Limpiar los inputs seleccion de mesa y categoria
+          document.getElementById("mesaSelect").value = "";
+          document.getElementById("categoriaSelect").value = "";
+          document.getElementById("productosContainer").innerHTML = "";
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message,
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el pedido.',
+      });
+      console.error(error);
+    });
+}
+
+window.cancelarPedidoActual = function() {
+  if (!pedidoIdModificar) {
+    Swal.fire('No hay pedido seleccionado', 'Seleccione un pedido para cancelar.', 'info');
+    return;
+  }
+  // Solo permitir si el estado es confirmado
+  if (window.estadoPedidoActual !== 3) {
+    Swal.fire('No permitido', 'Solo se puede cancelar un pedido en estado confirmado.', 'info');
+    return;
+  }
+  Swal.fire({
+    title: '¿Cancelar pedido?',
+    text: 'Esta acción no se puede deshacer. ¿Desea cancelar el pedido actual?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../controllers/cancelar_pedido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido_id: pedidoIdModificar })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Pedido cancelado', data.message || 'El pedido ha sido cancelado.', 'success').then(() => {
+            pedido = [];
+            pedidoIdModificar = null;
+            window.estadoPedidoActual = null;
+            actualizarLista();
+            actualizarBotonCancelarPedido(null);
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          });
+        } else {
+          Swal.fire('Error', data.message || 'No se pudo cancelar el pedido.', 'error');
+        }
+      })
+      .catch(() => {
+        Swal.fire('Error', 'No se pudo cancelar el pedido.', 'error');
+      });
+    }
+  });
+}
+
+window.cancelarPedidoActivoDesdeCard = function(pedidoId, mesaId) {
+  // Buscar el pedido en la variable global
+  const pedidoObj = window.pedidosActivosGlobal[mesaId];
+  if (!pedidoObj || pedidoObj.pedido_id != pedidoId) return;
+  if (pedidoObj.estados_idestados !== 3) {
+    Swal.fire('No permitido', 'Solo se puede cancelar un pedido en estado confirmado.', 'info');
+    return;
+  }
+  Swal.fire({
+    title: '¿Cancelar pedido?',
+    text: 'Esta acción no se puede deshacer. ¿Desea cancelar el pedido actual?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../controllers/cancelar_pedido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido_id: pedidoId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Pedido cancelado', data.message || 'El pedido ha sido cancelado.', 'success').then(() => {
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          });
+        } else {
+          Swal.fire('Error', data.message || 'No se pudo cancelar el pedido.', 'error');
+        }
+      })
+      .catch(() => {
+        Swal.fire('Error', 'No se pudo cancelar el pedido.', 'error');
+      });
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -802,6 +1064,7 @@ function cargarPedidosActivosGlobal() {
                     <div class="d-flex justify-content-between align-items-center mt-2">
                       <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>Modificar pedido</button>
                       <span class="badge bg-info text-dark ms-2">${pedido.estado_nombre || 'Desconocido'}</span>
+                      ${pedido.estados_idestados === 3 ? `<button class='btn btn-danger btn-sm ms-2' onclick='cancelarPedidoActivoDesdeCard(${pedido.pedido_id}, ${pedido.mesa_id})'><i class=\"fas fa-times me-1\"></i>Cancelar</button>` : ''}
                     </div>
                   </div>
                 </div>
