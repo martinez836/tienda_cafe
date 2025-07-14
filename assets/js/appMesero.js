@@ -1,5 +1,6 @@
 let pedido = [];
 let pedidoIdModificar = null;
+let reseteandoPorConfirmacion = false; // <-- Añadido para controlar el reseteo intencional
 
 // funcion para cargar productos al seleccionar una categoria de productos
 document.addEventListener("DOMContentLoaded", function () {
@@ -10,11 +11,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Validar que se haya seleccionado una mesa antes de cargar productos
   select.addEventListener("change", function () {
     if (!mesaSelect.value) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Seleccione una mesa',
-        text: 'Por favor, seleccione una mesa antes de ver los productos.',
-      });
+      if (!reseteandoPorConfirmacion) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Seleccione una mesa',
+          text: 'Por favor, seleccione una mesa antes de ver los productos.',
+        });
+      }
       select.value = '';
       return;
     }
@@ -431,9 +434,11 @@ function confirmarPedido() {
           pedidoIdModificar = null;
           actualizarLista();
           // Limpiar los inputs seleccion de mesa y categoria
-          document.getElementById("mesaSelect").value = "";
+          reseteandoPorConfirmacion = true;
           document.getElementById("categoriaSelect").value = "";
+          document.getElementById("mesaSelect").value = "";
           document.getElementById("productosContainer").innerHTML = "";
+          setTimeout(() => { reseteandoPorConfirmacion = false; }, 500);
         });
       } else {
         Swal.fire({
