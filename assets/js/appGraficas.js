@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productosVendidosCanvas) {
         const productosVendidosCtx = productosVendidosCanvas.getContext('2d');
         productosVendidosChart = new Chart(productosVendidosCtx, {
-            type: 'pie',
+            type: 'bar',
             data: {
                 labels: [],
                 datasets: [{
@@ -286,8 +286,68 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => showSwalError('Error al cargar Mesas atendidas por Empleado.'));
     }
 
+    // Gráfica de Barras: Recaudo por Mes
+    const recaudoMesCanvas = document.getElementById('recaudoMesChart');
+    let recaudoMesChart;
+    if (recaudoMesCanvas) {
+        const recaudoMesCtx = recaudoMesCanvas.getContext('2d');
+        recaudoMesChart = new Chart(recaudoMesCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Recaudo ($)',
+                    data: [],
+                    backgroundColor: [],
+                    borderColor: [],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: false,
+                        text: 'Recaudo por Mes'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    function loadRecaudoPorMes() {
+        if (!recaudoMesChart) return;
+        fetch('../../controllers/admin/graficas.php?action=get_recaudo_por_mes')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data.length > 0) {
+                    const labels = data.data.map(item => item.mes);
+                    const values = data.data.map(item => parseFloat(item.total_recaudo));
+                    const bgColors = values.map(() => randomColor(0.7));
+                    const borderColors = bgColors.map(c => c.replace('0.7', '1'));
+                    recaudoMesChart.data.labels = labels;
+                    recaudoMesChart.data.datasets[0].data = values;
+                    recaudoMesChart.data.datasets[0].backgroundColor = bgColors;
+                    recaudoMesChart.data.datasets[0].borderColor = borderColors;
+                    recaudoMesChart.update();
+                } else {
+                    recaudoMesChart.data.labels = [];
+                    recaudoMesChart.data.datasets[0].data = [];
+                    recaudoMesChart.data.datasets[0].backgroundColor = [];
+                    recaudoMesChart.data.datasets[0].borderColor = [];
+                    recaudoMesChart.update();
+                }
+            })
+            .catch(error => showSwalError('Error al cargar Recaudo por Mes.'));
+    }
+
     // Cargar todas las gráficas al cargar la página
     loadVentasPorCategoria();
+    loadRecaudoPorMes();
     loadProductosMasVendidos();
     loadIngresosPorEmpleado();
     loadMesasPorEmpleado();

@@ -73,6 +73,15 @@ class ConsultasGraficas
                 ORDER BY cantidad_mesas DESC;";
         return $this->mysql->efectuarConsulta($sql);
     }
+
+    public function getRecaudoPorMes() {
+        $sql = "SELECT DATE_FORMAT(pedidos.fecha_hora_pedido, '%M %Y') AS mes, SUM(detalle_pedidos.precio_producto * detalle_pedidos.cantidad_producto) AS total_recaudo
+                FROM detalle_pedidos
+                JOIN pedidos ON pedidos.idpedidos = detalle_pedidos.pedidos_idpedidos
+                GROUP BY mes
+                ORDER BY MIN(pedidos.fecha_hora_pedido)";
+        return $this->mysql->efectuarConsulta($sql);
+    }
 }
 
 ?>

@@ -119,8 +119,8 @@ verificarAdmin();
     <div class="content">
         <h2 class="mb-4">Gráficas  Reortes</h2>
 
-        <div class="row">
-            <div class="col-lg-6 mb-4">
+        <div class="row graficas-principales">
+            <div class="col-lg-6 mb-4 grafica-barras">
                 <div class="card">
                     <div class="card-header">
                         <i class="fas fa-chart-bar me-2"></i>Recaudo Mensual
@@ -130,13 +130,13 @@ verificarAdmin();
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 mb-4 grafica-barras">
                 <div class="card">
                     <div class="card-header">
-                        <i class="fas fa-chart-pie me-2"></i>Productos más Vendidos
+                        <i class="fas fa-chart-bar me-2"></i>Recaudo por Mes
                     </div>
                     <div class="card-body">
-                        <canvas id="productosVendidosChart"></canvas>
+                        <canvas id="recaudoMesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -157,6 +157,16 @@ verificarAdmin();
                     </div>
                     <div class="card-body">
                         <canvas id="mesasEmpleadoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4 grafica-pastel">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-2"></i>Productos más Vendidos
+                    </div>
+                    <div class="card-body">
+                        <canvas id="productosVendidosChart"></canvas>
                     </div>
                 </div>
             </div>
