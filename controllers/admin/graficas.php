@@ -46,6 +46,11 @@ try {
             $response = ['success' => true, 'data' => $data];
             break;
 
+        case 'get_recaudo_por_mes':
+            $data = $consultas->getRecaudoPorMes();
+            $response = ['success' => true, 'data' => $data];
+            break;
+
         default:
             $response = ['success' => false, 'message' => 'Invalid action provided.'];
             break;
