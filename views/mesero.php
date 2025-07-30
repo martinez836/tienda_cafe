@@ -86,7 +86,7 @@ try {
                             isset($mesa['token_usuario_id']) && $mesa['token_usuario_id'] != $usuarioId
                         ) {
                             continue;
-                        } */
+                        } 
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
                         $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
                         echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . '</option>';
