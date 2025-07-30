@@ -76,10 +76,10 @@ try {
                     $mesas && is_array($mesas)) {
                     $usuarioId = $_SESSION['usuario_id'];
                     foreach ($mesas as $mesa) {
-                        // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
-                        if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
-                            continue;
-                        }
+                        // Comentado: Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
+                        // if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
+                        //     continue;
+                        // }
                         // Si la mesa tiene token activo, solo mostrarla si el token es del usuario logueado
                         if (
                             isset($mesa['token_activo']) && $mesa['token_activo'] && 
@@ -89,7 +89,18 @@ try {
                         } 
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
                         $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
-                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . '</option>';
+                        
+                        // Agregar indicador visual del estado de la mesa
+                        $estadoMesa = '';
+                        if ($mesa['tiene_pedido_confirmado'] > 0) {
+                            $estadoMesa = ' [CONFIRMADO]';
+                        } elseif ($mesa['tiene_pedido_entregado'] > 0) {
+                            $estadoMesa = ' [ENTREGADO]';
+                        } elseif ($mesa['tiene_pedido_procesado'] > 0) {
+                            $estadoMesa = ' [PROCESADO]';
+                        }
+                        
+                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . $estadoMesa . '</option>';
                     }
                 }
                 ?>
