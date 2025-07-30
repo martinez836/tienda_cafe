@@ -572,15 +572,21 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
   // Buscar el pedido en la variable global
   const pedidoObj = window.pedidosActivosGlobal[mesaId];
   if (!pedidoObj || pedidoObj.pedido_id != pedidoId) return;
-  // Cargar productos en el carrito
-  pedido = pedidoObj.productos.map(prod => ({
-    id: prod.id,
-    nombre: prod.nombre,
-    cantidad: parseInt(prod.cantidad),
-    comentario: prod.comentario,
-    precio: parseFloat(prod.precio),
-    estado: pedidoObj.estado_nombre // Guardar el estado textual
-  }));
+
+  // Si el pedido está entregado, NO cargar productos anteriores, solo permitir agregar nuevos
+  if (pedidoObj.estados_idestados === 4) {
+    pedido = []; // Carrito vacío
+  } else {
+    // Cargar productos en el carrito normalmente
+    pedido = pedidoObj.productos.map(prod => ({
+      id: prod.id,
+      nombre: prod.nombre,
+      cantidad: parseInt(prod.cantidad),
+      comentario: prod.comentario,
+      precio: parseFloat(prod.precio),
+      estado: pedidoObj.estado_nombre // Guardar el estado textual
+    }));
+  }
   actualizarLista(pedidoObj.estados_idestados);
   // Resaltar el pedido que se está editando
   document.querySelectorAll('#pedidosActivosMesa .border').forEach(div => div.classList.remove('border-primary'));
@@ -588,7 +594,10 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
   if (divPedido) divPedido.classList.add('border-primary');
   // Seleccionar la mesa en el select
   const mesaSelect = document.getElementById('mesaSelect');
-  if (mesaSelect) mesaSelect.value = mesaId;
+  if (mesaSelect) {
+    mesaSelect.value = mesaId;
+    mesaSelect.dispatchEvent(new Event('change'));
+  }
   pedidoIdModificar = pedidoId;
   window.estadoPedidoActual = pedidoObj.estados_idestados; // Guardar estado numérico global
   actualizarBotonCancelarPedido(window.estadoPedidoActual);
@@ -1067,7 +1076,9 @@ function cargarPedidosActivosGlobal() {
             html += `</ul></div>
                     <div><strong>Total:</strong> $${pedido.productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0).toFixed(2)}</div>
                     <div class="d-flex justify-content-between align-items-center mt-2">
-                      <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>Modificar pedido</button>
+                      <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>
+                        ${pedido.estados_idestados === 4 ? 'Adicionar productos' : 'Modificar pedido'}
+                      </button>
                       <span class="badge bg-info text-dark ms-2">${pedido.estado_nombre || 'Desconocido'}</span>
                       ${pedido.estados_idestados === 3 ? `<button class='btn btn-danger btn-sm ms-2' onclick='cancelarPedidoActivoDesdeCard(${pedido.pedido_id}, ${pedido.mesa_id})'><i class=\"fas fa-times me-1\"></i>Cancelar</button>` : ''}
                     </div>

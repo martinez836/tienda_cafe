@@ -33,7 +33,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Solo se puede cancelar un pedido en estado confirmado.']);
         exit;
     }
-    // Cambiar a estado cancelado (6)
+    // Cambiar a estado cancelado (2)
     $stmt = $pdo->prepare('UPDATE pedidos SET estados_idestados = 2 WHERE idpedidos = ?');
     $stmt->execute([$pedido_id]);
     echo json_encode(['success' => true, 'message' => 'Pedido cancelado correctamente.']);
