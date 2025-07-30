@@ -76,7 +76,7 @@ try {
                     $mesas && is_array($mesas)) {
                     $usuarioId = $_SESSION['usuario_id'];
                     foreach ($mesas as $mesa) {
-                        /* // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
+                        // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
                         if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
                             continue;
                         }
