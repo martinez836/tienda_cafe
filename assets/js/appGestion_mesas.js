@@ -123,7 +123,7 @@ const eliminarMesa = (id) => {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch('/Cafe/controllers/eliminar_mesa.php', {
+            fetch('../../controllers/eliminar_mesa.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${encodeURIComponent(id)}`
@@ -161,8 +161,8 @@ saveMesaBtn.addEventListener('click', () => {
 
     // Si hay id, editar; si no, agregar
     const url = id
-        ? '/tiendaCafe/controllers/editar_mesa.php'
-        : '/tiendaCafe/controllers/agregar_mesa.php';
+        ? '../../controllers/editar_mesa.php'
+        : '../../controllers/agregar_mesa.php';
 
     const body = id
         ? `id=${encodeURIComponent(id)}&nombre=${encodeURIComponent(nombre)}`

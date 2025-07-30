@@ -77,7 +77,7 @@ try {
                     $usuarioId = $_SESSION['usuario_id'];
                     foreach ($mesas as $mesa) {
                         // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
-                        if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
+                        /* if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
                             continue;
                         }
                         // Si la mesa tiene token activo, solo mostrarla si el token es del usuario logueado
@@ -86,7 +86,7 @@ try {
                             isset($mesa['token_usuario_id']) && $mesa['token_usuario_id'] != $usuarioId
                         ) {
                             continue;
-                        }
+                        } */
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
                         $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
                         echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . '</option>';
