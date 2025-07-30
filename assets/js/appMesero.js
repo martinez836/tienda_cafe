@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       fetch("../controllers/pedidos_activos_mesa.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mesa_id: mesaId })
+        body: JSON.stringify({ mesa_id: mesaId, para_edicion: false })
       })
       .then(res => res.json())
       .then(data => {
@@ -228,20 +228,9 @@ function agregarAlPedido() {
     return;
   }
 
-  const existente = pedido.find(p => p.id === id && p.comentario === comentario);
-
-  if (existente) {
-    if (existente.cantidad + cantidad > stock) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Stock insuficiente',
-        text: 'No puedes agregar más que el stock disponible.',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-    existente.cantidad += cantidad;
-  } else {
+  // Si el pedido está en estado entregado (4), siempre agregar como nuevo line item
+  // sin combinar con productos existentes
+  if (window.estadoPedidoActual === 4) {
     if (cantidad > stock) {
       Swal.fire({
         icon: 'warning',
@@ -259,6 +248,40 @@ function agregarAlPedido() {
       precio: precio,
       stock: stock
     });
+  } else {
+    // Para otros estados, combinar productos con el mismo ID y comentario
+    const existente = pedido.find(p => p.id === id && p.comentario === comentario);
+
+    if (existente) {
+      if (existente.cantidad + cantidad > stock) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Stock insuficiente',
+          text: 'No puedes agregar más que el stock disponible.',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+      existente.cantidad += cantidad;
+    } else {
+      if (cantidad > stock) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Stock insuficiente',
+          text: 'No puedes agregar más que el stock disponible.',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+      pedido.push({
+        id: id,
+        nombre: nombre,
+        cantidad: cantidad,
+        comentario: comentario,
+        precio: precio,
+        stock: stock
+      });
+    }
   }
 
   actualizarLista();
@@ -573,21 +596,46 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
   const pedidoObj = window.pedidosActivosGlobal[mesaId];
   if (!pedidoObj || pedidoObj.pedido_id != pedidoId) return;
 
-  // Si el pedido está entregado, NO cargar productos anteriores, solo permitir agregar nuevos
+  // Si el pedido está entregado, cargar solo productos nuevos para edición
   if (pedidoObj.estados_idestados === 4) {
-    pedido = []; // Carrito vacío
+    // Obtener solo productos nuevos usando para_edicion = true
+    fetch("../controllers/pedidos_activos_mesa.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mesa_id: mesaId, para_edicion: true })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.pedidos && data.pedidos.length > 0) {
+        // Solo cargar productos nuevos (es_producto_nuevo = 1)
+        const productos = data.pedidos[0].productos;
+        pedido = productos.map(prod => ({
+          id: prod.id,
+          nombre: prod.nombre,
+          cantidad: parseInt(prod.cantidad),
+          comentario: prod.comentario,
+          precio: parseFloat(prod.precio),
+          es_producto_nuevo: prod.es_producto_nuevo || 0
+        }));
+      } else {
+        pedido = []; // Carrito vacío si no hay productos nuevos
+      }
+      actualizarLista(pedidoObj.estados_idestados);
+    });
   } else {
-    // Cargar productos en el carrito normalmente
+    // Para otros estados, cargar todos los productos normalmente
     pedido = pedidoObj.productos.map(prod => ({
       id: prod.id,
       nombre: prod.nombre,
       cantidad: parseInt(prod.cantidad),
       comentario: prod.comentario,
       precio: parseFloat(prod.precio),
-      estado: pedidoObj.estado_nombre // Guardar el estado textual
+      estado: pedidoObj.estado_nombre, // Guardar el estado textual
+      es_producto_nuevo: prod.es_producto_nuevo || 0
     }));
+    actualizarLista(pedidoObj.estados_idestados);
   }
-  actualizarLista(pedidoObj.estados_idestados);
+  
   // Resaltar el pedido que se está editando
   document.querySelectorAll('#pedidosActivosMesa .border').forEach(div => div.classList.remove('border-primary'));
   const divPedido = document.getElementById('pedidoActivo_' + pedidoId);
@@ -617,6 +665,7 @@ function actualizarLista(estadoPedido) {
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <div>
           <strong>${item.nombre}</strong>
+          ${item.es_producto_nuevo === 1 ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
           <br>
           <small class="text-muted">${item.comentario || "sin obs."}</small>
           <br>
@@ -1071,7 +1120,9 @@ function cargarPedidosActivosGlobal() {
                     <div><strong>Pedido #:</strong> ${pedido.pedido_id}</div>
                     <div><strong>Productos:</strong><ul class='mb-1'>`;
             pedido.productos.forEach(prod => {
-              html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})</li>`;
+              const esNuevo = prod.es_producto_nuevo === 1;
+              const badgeNuevo = esNuevo ? '<span class="badge bg-success ms-1">NUEVO</span>' : '';
+              html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})${badgeNuevo}</li>`;
             });
             html += `</ul></div>
                     <div><strong>Total:</strong> $${pedido.productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0).toFixed(2)}</div>
