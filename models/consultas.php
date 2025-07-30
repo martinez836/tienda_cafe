@@ -423,6 +423,30 @@ class ConsultasMesero
         $this->mysql->ejecutarSentenciaPreparada($sql, 's', $params);
         return true;
     }
+    
+    public function editar_nombre_mesa($nombre, $idmesas) {
+        // Verificar si ya existe una mesa activa con ese nombre (excluyendo la mesa actual)
+        $sqlCheck = "SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1 AND idmesas != ?";
+        $paramsCheck = [$nombre, $idmesas];
+        $stmt = $this->mysql->ejecutarSentenciaPreparada($sqlCheck, 'si', $paramsCheck);
+        $row = $stmt->fetch();
+        if ($row && isset($row['total']) && $row['total'] > 0) {
+            return 'duplicado';
+        }
+        // Actualizar el nombre de la mesa
+        $sql = "UPDATE mesas SET nombre = ? WHERE idmesas = ?";
+        $params = [$nombre, $idmesas];
+        $this->mysql->ejecutarSentenciaPreparada($sql, 'si', $params);
+        return true;
+    }
+
+    // INACTIVAR MESA
+    public function inactivar_mesa($idmesas) {
+        $sql = "UPDATE mesas SET estados_idestados = 2 WHERE idmesas = ?";
+        $params = [$idmesas];
+        $this->mysql->ejecutarSentenciaPreparada($sql, 'i', $params);
+        return true;
+    }
 }
 
 ?>
