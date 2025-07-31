@@ -1,5 +1,7 @@
 <?php
 
+use PHPMailer\PHPMailer\SMTP;
+
 require_once __DIR__ . '/MySQL.php';
 require_once __DIR__ . '/../config/config.php';
 
@@ -332,9 +334,6 @@ class ConsultasMesero
     // PEDIDOS: Marcar productos como nuevos cuando se actualiza un pedido entregado
     public function marcarProductosComoNuevos($pdo, $pedido_id, $productos_ids) {
         if (empty($productos_ids)) return;
-        
-        // NO hacer nada - los productos ya se marcan como nuevos en guardarDetallePedido
-        // cuando el pedido está en estado 4 (entregado)
         return;
     }
 
@@ -407,45 +406,33 @@ class ConsultasMesero
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // AGREGAR MESA
+    // Agregar mesa
     public function agregar_mesa($nombre) {
-        // Verificar si ya existe una mesa activa con ese nombre
-        $sqlCheck = "SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1";
-        $paramsCheck = [$nombre];
-        $stmt = $this->mysql->ejecutarSentenciaPreparada($sqlCheck, 's', $paramsCheck);
-        $row = $stmt->fetch();
-        if ($row && isset($row['total']) && $row['total'] > 0) {
+        $stmt = $this->mysql->ejecutarSentenciaPreparada("SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1", 's', [$nombre]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && $row['total'] > 0) {
             return 'duplicado';
+        } else {
+            $stmt = $this->mysql->ejecutarSentenciaPreparada("INSERT INTO mesas (nombre, estados_idestados) VALUES (?, 1)", 's', [$nombre]);
+            return $stmt->rowCount() > 0;
+        }        
+    } 
+    // Editar nombre de mesa
+    public function editar_nombre_mesa($nombre, $id) {
+        $stmt = $this->mysql->ejecutarSentenciaPreparada("SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND idmesas != ? AND estados_idestados = 1", 'si', [$nombre, $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && $row['total'] > 0) {
+            return 'duplicado';
+        } else {
+            $stmt = $this->mysql->ejecutarSentenciaPreparada("UPDATE mesas SET nombre = ? WHERE idmesas = ?", 'si', [$nombre, $id]);
+            return $stmt->rowCount() > 0;
         }
-        // Insertar la nueva mesa
-        $sql = "INSERT INTO mesas (nombre, estados_idestados) VALUES (?, 1)";
-        $params = [$nombre];
-        $this->mysql->ejecutarSentenciaPreparada($sql, 's', $params);
-        return true;
     }
     
-    public function editar_nombre_mesa($nombre, $idmesas) {
-        // Verificar si ya existe una mesa activa con ese nombre (excluyendo la mesa actual)
-        $sqlCheck = "SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1 AND idmesas != ?";
-        $paramsCheck = [$nombre, $idmesas];
-        $stmt = $this->mysql->ejecutarSentenciaPreparada($sqlCheck, 'si', $paramsCheck);
-        $row = $stmt->fetch();
-        if ($row && isset($row['total']) && $row['total'] > 0) {
-            return 'duplicado';
-        }
-        // Actualizar el nombre de la mesa
-        $sql = "UPDATE mesas SET nombre = ? WHERE idmesas = ?";
-        $params = [$nombre, $idmesas];
-        $this->mysql->ejecutarSentenciaPreparada($sql, 'si', $params);
-        return true;
-    }
-
-    // INACTIVAR MESA
-    public function inactivar_mesa($idmesas) {
-        $sql = "UPDATE mesas SET estados_idestados = 2 WHERE idmesas = ?";
-        $params = [$idmesas];
-        $this->mysql->ejecutarSentenciaPreparada($sql, 'i', $params);
-        return true;
+    //Inactivar mesa
+    public function inactivar_mesa($id) {
+        $stmt = $this->mysql->ejecutarSentenciaPreparada("UPDATE mesas SET estados_idestados = 2 WHERE idmesas = ?", 'i', [$id]);
+        return $stmt->rowCount() > 0;
     }
 }
 
