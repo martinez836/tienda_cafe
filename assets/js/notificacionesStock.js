@@ -46,7 +46,7 @@ class NotificacionesStock {
     async obtenerProductosBajoStock() {
         const response = await fetch(`../../controllers/admin/productos.php?action=getProductosBajoStock`);
         const data = await response.json();
-        return data.success ? data.data : [];
+        return data.success ? data.data.filter(producto => producto.stock_producto > 0) : [];
     }
 
     async obtenerProductosSinStock() {
