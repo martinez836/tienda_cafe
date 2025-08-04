@@ -3,6 +3,26 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../models/consultasCajero.php';
 require_once __DIR__ . '../../../plugins/fpdf/fpdf.php';
 
+class FacturaPedidoPDF extends FPDF {
+    public function Header() {
+        // Espacio para el logo (texto)
+        $this->SetY(10);
+        $this->SetX(10);
+        $this->SetFont('Arial', 'B', 18);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFillColor(255, 255, 255); // Blanco
+        $this->Cell(35, 20, 'LOGO', 1, 0, 'C', true);
+        // Título centrado
+        $this->SetY(10);
+        $this->SetX(50);
+        $this->SetFont('Arial', 'B', 16);
+        $this->SetTextColor(0,0,0);
+        $this->SetFillColor(255,255,255);
+        $this->Cell(140, 20, utf8_decode('Factura de Pedido'), 1, 0, 'C', true);
+        $this->Ln(25);
+    }
+}
+
 class ProcesarPagoCajero
 {
     
@@ -66,44 +86,42 @@ class ProcesarPagoCajero
 
     private function generarPdf($pedido)
     {
-        $pdf = new FPDF();
+        $pdf = new FacturaPedidoPDF();
         $pdf->AddPage();
-
-        // Título
-        $pdf->SetFont('Arial', 'B', 16);
-        $pdf->Cell(0, 10, 'Factura de Pedido', 0, 1, 'C');
-
-        // Información del cliente
         $pdf->SetFont('Arial', '', 12);
-        $pdf->Cell(0, 10, 'Mesa: ' . $pedido['cliente'], 0, 1);
-        $pdf->Cell(0, 10, 'Mesero: ' . $pedido['mesero'], 0, 1);
-        $pdf->Cell(0, 10, 'Fecha y hora: ' . $pedido['hora'], 0, 1);
-
-        // Línea
-        $pdf->Ln(5);
-        $pdf->Cell(0, 0, '', 'T'); // línea horizontal
-
-        // Detalles de productos
-        $pdf->Ln(5);
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->Cell(100, 10, 'Producto', 0);
-        $pdf->Cell(40, 10, 'Precio', 0);
-        $pdf->Cell(40, 10, 'Cantidad', 0);
-        $pdf->Ln();
-
-        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->SetLineWidth(0.5);
+        // Recuadro de datos principales (más compacto)
+        $pdf->SetY(40);
+        $pdf->SetX(10);
+        $pdf->Rect(10, 40, 190, 20, 'D');
+        $pdf->SetY(45);
+        $pdf->SetX(15);
+        $pdf->SetFont('Arial', '', 11);
+        // Mesa a la izquierda, Mesero a la derecha
+        $pdf->Cell(95, 8, utf8_decode('Mesa: ') . $pedido['cliente'], 0, 0, 'L');
+        $pdf->Cell(85, 8, utf8_decode('Mesero: ') . $pedido['mesero'], 0, 1, 'R');
+        $pdf->SetX(15);
+        $pdf->Cell(180, 8, utf8_decode('Fecha y hora: ') . $pedido['hora'], 0, 1, 'L');
+        // Menos espacio antes de la tabla
+        $pdf->Ln(2);
+        // Encabezado de tabla de productos (más compacto)
+        $pdf->SetFont('Arial', 'B', 11);
+        $pdf->SetTextColor(0,0,0);
+        $pdf->Cell(100, 8, utf8_decode('Producto'), 1, 0, 'C');
+        $pdf->Cell(40, 8, utf8_decode('Precio'), 1, 0, 'C');
+        $pdf->Cell(40, 8, utf8_decode('Cantidad'), 1, 1, 'C');
+        $pdf->SetFont('Arial', '', 11);
         foreach ($pedido['productos'] as $producto) {
-            $pdf->Cell(100, 10, $producto['nombre'], 0);
-            $pdf->Cell(40, 10, '$' . number_format($producto['precio']), 0);
-            $pdf->Cell(40, 10, $producto['cantidad'], 0);
-            $pdf->Ln();
+            $pdf->Cell(100, 8, utf8_decode($producto['nombre']), 1, 0, 'L');
+            $pdf->Cell(40, 8, '$' . number_format($producto['precio']), 1, 0, 'C');
+            $pdf->Cell(40, 8, $producto['cantidad'], 1, 1, 'C');
         }
-
-        // Total
-        $pdf->Ln(5);
-        $pdf->SetFont('Arial', 'B', 14);
-        $pdf->Cell(0, 10, 'Total: $' . number_format($pedido['total']), 0, 1, 'R');
-
+        // Total justo debajo de la tabla, alineado a la derecha
+        $pdf->Ln(2);
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(140, 8, utf8_decode('Total:'), 0, 0, 'R');
+        $pdf->Cell(40, 8, '$' . number_format($pedido['total']), 0, 1, 'C');
         // Guardar PDF en carpeta o mostrarlo directamente
         $filename = __DIR__ . "/../../facturas/factura_pedido_{$pedido['numero']}.pdf";
         $pdf->Output('F', $filename);
