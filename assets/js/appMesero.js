@@ -153,14 +153,22 @@ document.addEventListener("DOMContentLoaded", function () {
             precio: parseFloat(prod.precio)
           }));
           actualizarLista();
+          
+          // Mostrar pedidos activos en el contenedor específico
+          mostrarPedidosActivosMesa(data.pedidos);
         } else {
           pedido = [];
           actualizarLista();
+          
+          // Limpiar contenedor de pedidos activos
+          mostrarPedidosActivosMesa([]);
         }
       });
     } else {
       pedido = [];
       actualizarLista();
+      // Limpiar contenedor de pedidos activos
+      mostrarPedidosActivosMesa([]);
     }
   });
 });
@@ -326,6 +334,113 @@ function actualizarLista() {
       <strong>Total</strong>
       <strong>$${total.toFixed(2)}</strong>
     </li>`;
+}
+
+// Función para mostrar pedidos activos de la mesa en el contenedor específico
+function mostrarPedidosActivosMesa(pedidos) {
+  const contenedor = document.getElementById("pedidosActivosMesa");
+  if (!contenedor) return;
+  
+  if (!pedidos || pedidos.length === 0) {
+    contenedor.innerHTML = '<div class="text-muted">No hay pedidos activos.</div>';
+    return;
+  }
+  
+  let html = '<div class="accordion" id="accordionPedidosActivosMesa">';
+  
+  pedidos.forEach((pedido, index) => {
+    const estadoNombre = getEstadoNombre(pedido.estados_idestados || pedido.estado);
+    const estadoClass = getEstadoClass(pedido.estados_idestados || pedido.estado);
+    
+    html += `
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading${pedido.pedido_id}">
+          <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" 
+                  data-bs-toggle="collapse" data-bs-target="#collapse${pedido.pedido_id}" 
+                  aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse${pedido.pedido_id}">
+            <div class="d-flex justify-content-between w-100 align-items-center">
+              <span><strong>Pedido #${pedido.pedido_id}</strong></span>
+              <span class="badge ${estadoClass} me-2">${estadoNombre}</span>
+            </div>
+          </button>
+        </h2>
+        <div id="collapse${pedido.pedido_id}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" 
+             aria-labelledby="heading${pedido.pedido_id}" data-bs-parent="#accordionPedidosActivosMesa">
+          <div class="accordion-body">
+            <div class="mb-2">
+              <strong>Fecha:</strong> ${pedido.fecha_hora}
+            </div>
+            ${pedido.token_utilizado ? `<div class="mb-2"><strong>Token:</strong> ${pedido.token_utilizado}</div>` : ''}
+            <div class="mb-3">
+              <strong>Productos:</strong>
+              <ul class="list-unstyled ms-2">`;
+    
+    let totalPedido = 0;
+    pedido.productos.forEach(producto => {
+      const subtotal = parseFloat(producto.precio) * parseInt(producto.cantidad);
+      totalPedido += subtotal;
+      const esNuevo = producto.es_producto_nuevo == 1;
+      
+      html += `
+                <li class="d-flex justify-content-between align-items-center border-bottom py-1">
+                  <div>
+                    ${producto.nombre} x${producto.cantidad}
+                    ${esNuevo ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
+                    ${producto.comentario ? `<br><small class="text-muted">${producto.comentario}</small>` : ''}
+                  </div>
+                  <span>$${subtotal.toFixed(2)}</span>
+                </li>`;
+    });
+    
+    html += `
+              </ul>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <strong>Total: $${totalPedido.toFixed(2)}</strong>
+              <div>
+                ${pedido.estados_idestados == 3 ? 
+                  `<button class="btn btn-warning btn-sm me-2" onclick="modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-edit"></i> Modificar
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="cancelarPedidoActivoDesdeCard(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-times"></i> Cancelar
+                  </button>` : 
+                  pedido.estados_idestados == 4 ? 
+                  `<button class="btn btn-warning btn-sm" onclick="modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-plus"></i> Agregar productos
+                  </button>` : ''
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+  
+  html += '</div>';
+  contenedor.innerHTML = html;
+}
+
+// Función auxiliar para obtener el nombre del estado
+function getEstadoNombre(estadoId) {
+  const estados = {
+    1: 'Pendiente',
+    3: 'Confirmado',
+    4: 'Entregado',
+    5: 'Procesado'
+  };
+  return estados[estadoId] || 'Desconocido';
+}
+
+// Función auxiliar para obtener la clase CSS del estado
+function getEstadoClass(estadoId) {
+  const clases = {
+    1: 'bg-warning',
+    3: 'bg-info',
+    4: 'bg-success',
+    5: 'bg-primary'
+  };
+  return clases[estadoId] || 'bg-secondary';
 }
 
 function actualizarCantidadEnBD(index, nuevaCantidad) {
@@ -763,6 +878,84 @@ function confirmarPedido() {
   // Calcular el total del pedido
   const total = pedido.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
+  // Crear resumen del pedido para mostrar
+  let resumenHtml = `
+    <div class="text-start">
+      <h5 class="mb-3"><i class="fas fa-chair me-2"></i>Mesa: ${mesaNombre}</h5>
+      <div class="mb-3">
+        <strong><i class="fas fa-shopping-cart me-2"></i>Productos:</strong>
+        <div class="mt-2">
+  `;
+
+  pedido.forEach(item => {
+    const subtotal = item.precio * item.cantidad;
+    resumenHtml += `
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <div>
+          <strong>${item.nombre}</strong>
+          ${item.es_producto_nuevo === 1 ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
+          <br>
+          <small class="text-muted">${item.comentario || 'Sin observaciones'}</small>
+          <br>
+          <small class="text-info">$${item.precio.toFixed(2)} × ${item.cantidad}</small>
+        </div>
+        <div class="text-end">
+          <strong>$${subtotal.toFixed(2)}</strong>
+        </div>
+      </div>
+    `;
+  });
+
+  resumenHtml += `
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+        <strong class="fs-5"><i class="fas fa-calculator me-2"></i>Total del pedido:</strong>
+        <strong class="fs-4 text-success">$${total.toFixed(2)}</strong>
+      </div>
+    </div>
+  `;
+
+  // Mostrar resumen y confirmar
+  Swal.fire({
+    title: pedidoIdModificar ? 
+      '<i class="fas fa-edit"></i> Confirmar Modificación' : 
+      '<i class="fas fa-check"></i> Confirmar Pedido',
+    html: resumenHtml,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: pedidoIdModificar ? 
+      '<i class="fas fa-save me-2"></i>Confirmar Modificación' : 
+      '<i class="fas fa-check me-2"></i>Confirmar Pedido',
+    cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+    width: '600px',
+    customClass: {
+      popup: 'swal-wide'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Proceder con la confirmación del pedido
+      enviarPedido(mesa, total);
+    }
+  });
+}
+
+// Función separada para enviar el pedido al servidor
+function enviarPedido(mesa, total) {
+  // Mostrar loading
+  Swal.fire({
+    title: 'Procesando pedido...',
+    html: 'Por favor espere mientras se procesa su pedido.',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
   fetch("../controllers/confirmar_pedido.php", {
     method: "POST",
     headers: {
@@ -799,11 +992,18 @@ function confirmarPedido() {
           }
           pedido = [];
           pedidoIdModificar = null;
+          window.estadoPedidoActual = null;
           actualizarLista();
           // Limpiar los inputs seleccion de mesa y categoria
           document.getElementById("mesaSelect").value = "";
           document.getElementById("categoriaSelect").value = "";
           document.getElementById("productosContainer").innerHTML = "";
+          
+          // Recargar pedidos activos de la mesa si hay una seleccionada
+          const mesaSelect = document.getElementById("mesaSelect");
+          if (mesaSelect.value) {
+            mostrarPedidosActivosMesa([]);
+          }
         });
       } else {
         Swal.fire({
@@ -1198,3 +1398,25 @@ window.addEventListener('DOMContentLoaded', function() {
   mesaSelect.addEventListener('change', updateBtnCancelarToken);
   updateBtnCancelarToken();
 });
+
+// Agregar estilos CSS para el modal de resumen
+const style = document.createElement('style');
+style.textContent = `
+  .swal-wide {
+    width: 90% !important;
+    max-width: 600px !important;
+  }
+  
+  .swal2-html-container {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .swal-wide {
+      width: 95% !important;
+      margin: 10px !important;
+    }
+  }
+`;
+document.head.appendChild(style);
