@@ -18,13 +18,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Sanitizar entrada
         $mesa_id = SecurityUtils::sanitizeId($data['mesa_id'], 'ID de mesa');
         
+        // Verificar si se solicita para edición
+        $para_edicion = isset($data['para_edicion']) ? (bool)$data['para_edicion'] : false;
+        
         $pdo = config::conectar();
         $consultas = new ConsultasMesero();
         $pedidos = $consultas->traerPedidosActivosPorMesa($pdo, $mesa_id);
         $resultado = [];
         
         foreach ($pedidos as $pedido) {
-            $productos = $consultas->traerDetallePedido($pdo, $pedido['idpedidos']);
+            // Usar la función correcta según el contexto
+            if ($para_edicion) {
+                $productos = $consultas->traerDetallePedidoParaEdicion($pdo, $pedido['idpedidos']);
+            } else {
+                $productos = $consultas->traerDetallePedido($pdo, $pedido['idpedidos']);
+            }
+            
             $resultado[] = [
                 'pedido_id' => (int)$pedido['idpedidos'],
                 'fecha_hora' => SecurityUtils::escapeHtml($pedido['fecha_hora_pedido']),

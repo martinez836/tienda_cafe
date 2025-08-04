@@ -1,5 +1,6 @@
 let pedido = [];
 let pedidoIdModificar = null;
+let reseteandoPorConfirmacion = false; // <-- Añadido para controlar el reseteo intencional
 
 // funcion para cargar productos al seleccionar una categoria de productos
 document.addEventListener("DOMContentLoaded", function () {
@@ -10,11 +11,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Validar que se haya seleccionado una mesa antes de cargar productos
   select.addEventListener("change", function () {
     if (!mesaSelect.value) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Seleccione una mesa',
-        text: 'Por favor, seleccione una mesa antes de ver los productos.',
-      });
+      if (!reseteandoPorConfirmacion) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Seleccione una mesa',
+          text: 'Por favor, seleccione una mesa antes de ver los productos.',
+        });
+      }
       select.value = '';
       return;
     }
@@ -135,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       fetch("../controllers/pedidos_activos_mesa.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mesa_id: mesaId })
+        body: JSON.stringify({ mesa_id: mesaId, para_edicion: false })
       })
       .then(res => res.json())
       .then(data => {
@@ -150,14 +153,22 @@ document.addEventListener("DOMContentLoaded", function () {
             precio: parseFloat(prod.precio)
           }));
           actualizarLista();
+          
+          // Mostrar pedidos activos en el contenedor específico
+          mostrarPedidosActivosMesa(data.pedidos);
         } else {
           pedido = [];
           actualizarLista();
+          
+          // Limpiar contenedor de pedidos activos
+          mostrarPedidosActivosMesa([]);
         }
       });
     } else {
       pedido = [];
       actualizarLista();
+      // Limpiar contenedor de pedidos activos
+      mostrarPedidosActivosMesa([]);
     }
   });
 });
@@ -225,20 +236,9 @@ function agregarAlPedido() {
     return;
   }
 
-  const existente = pedido.find(p => p.id === id && p.comentario === comentario);
-
-  if (existente) {
-    if (existente.cantidad + cantidad > stock) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Stock insuficiente',
-        text: 'No puedes agregar más que el stock disponible.',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-    existente.cantidad += cantidad;
-  } else {
+  // Si el pedido está en estado entregado (4), siempre agregar como nuevo line item
+  // sin combinar con productos existentes
+  if (window.estadoPedidoActual === 4) {
     if (cantidad > stock) {
       Swal.fire({
         icon: 'warning',
@@ -256,6 +256,40 @@ function agregarAlPedido() {
       precio: precio,
       stock: stock
     });
+  } else {
+    // Para otros estados, combinar productos con el mismo ID y comentario
+    const existente = pedido.find(p => p.id === id && p.comentario === comentario);
+
+    if (existente) {
+      if (existente.cantidad + cantidad > stock) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Stock insuficiente',
+          text: 'No puedes agregar más que el stock disponible.',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+      existente.cantidad += cantidad;
+    } else {
+      if (cantidad > stock) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Stock insuficiente',
+          text: 'No puedes agregar más que el stock disponible.',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+      pedido.push({
+        id: id,
+        nombre: nombre,
+        cantidad: cantidad,
+        comentario: comentario,
+        precio: precio,
+        stock: stock
+      });
+    }
   }
 
   actualizarLista();
@@ -300,6 +334,113 @@ function actualizarLista() {
       <strong>Total</strong>
       <strong>$${total.toFixed(2)}</strong>
     </li>`;
+}
+
+// Función para mostrar pedidos activos de la mesa en el contenedor específico
+function mostrarPedidosActivosMesa(pedidos) {
+  const contenedor = document.getElementById("pedidosActivosMesa");
+  if (!contenedor) return;
+  
+  if (!pedidos || pedidos.length === 0) {
+    contenedor.innerHTML = '<div class="text-muted">No hay pedidos activos.</div>';
+    return;
+  }
+  
+  let html = '<div class="accordion" id="accordionPedidosActivosMesa">';
+  
+  pedidos.forEach((pedido, index) => {
+    const estadoNombre = getEstadoNombre(pedido.estados_idestados || pedido.estado);
+    const estadoClass = getEstadoClass(pedido.estados_idestados || pedido.estado);
+    
+    html += `
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading${pedido.pedido_id}">
+          <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" 
+                  data-bs-toggle="collapse" data-bs-target="#collapse${pedido.pedido_id}" 
+                  aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="collapse${pedido.pedido_id}">
+            <div class="d-flex justify-content-between w-100 align-items-center">
+              <span><strong>Pedido #${pedido.pedido_id}</strong></span>
+              <span class="badge ${estadoClass} me-2">${estadoNombre}</span>
+            </div>
+          </button>
+        </h2>
+        <div id="collapse${pedido.pedido_id}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" 
+             aria-labelledby="heading${pedido.pedido_id}" data-bs-parent="#accordionPedidosActivosMesa">
+          <div class="accordion-body">
+            <div class="mb-2">
+              <strong>Fecha:</strong> ${pedido.fecha_hora}
+            </div>
+            ${pedido.token_utilizado ? `<div class="mb-2"><strong>Token:</strong> ${pedido.token_utilizado}</div>` : ''}
+            <div class="mb-3">
+              <strong>Productos:</strong>
+              <ul class="list-unstyled ms-2">`;
+    
+    let totalPedido = 0;
+    pedido.productos.forEach(producto => {
+      const subtotal = parseFloat(producto.precio) * parseInt(producto.cantidad);
+      totalPedido += subtotal;
+      const esNuevo = producto.es_producto_nuevo == 1;
+      
+      html += `
+                <li class="d-flex justify-content-between align-items-center border-bottom py-1">
+                  <div>
+                    ${producto.nombre} x${producto.cantidad}
+                    ${esNuevo ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
+                    ${producto.comentario ? `<br><small class="text-muted">${producto.comentario}</small>` : ''}
+                  </div>
+                  <span>$${subtotal.toFixed(2)}</span>
+                </li>`;
+    });
+    
+    html += `
+              </ul>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <strong>Total: $${totalPedido.toFixed(2)}</strong>
+              <div>
+                ${pedido.estados_idestados == 3 ? 
+                  `<button class="btn btn-warning btn-sm me-2" onclick="modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-edit"></i> Modificar
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="cancelarPedidoActivoDesdeCard(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-times"></i> Cancelar
+                  </button>` : 
+                  pedido.estados_idestados == 4 ? 
+                  `<button class="btn btn-warning btn-sm" onclick="modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id || 'null'})">
+                    <i class="fas fa-plus"></i> Agregar productos
+                  </button>` : ''
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  });
+  
+  html += '</div>';
+  contenedor.innerHTML = html;
+}
+
+// Función auxiliar para obtener el nombre del estado
+function getEstadoNombre(estadoId) {
+  const estados = {
+    1: 'Pendiente',
+    3: 'Confirmado',
+    4: 'Entregado',
+    5: 'Procesado'
+  };
+  return estados[estadoId] || 'Desconocido';
+}
+
+// Función auxiliar para obtener la clase CSS del estado
+function getEstadoClass(estadoId) {
+  const clases = {
+    1: 'bg-warning',
+    3: 'bg-info',
+    4: 'bg-success',
+    5: 'bg-primary'
+  };
+  return clases[estadoId] || 'bg-secondary';
 }
 
 function actualizarCantidadEnBD(index, nuevaCantidad) {
@@ -402,7 +543,8 @@ function confirmarPedido() {
       mesa_id: parseInt(mesa),
       productos: pedido,
       total: total,
-      pedido_id: pedidoIdModificar
+      pedido_id: pedidoIdModificar,
+      nuevo_estado: (pedidoIdModificar && window.pedidoCanceladoParaModificar) ? 2 : undefined
     }),
   })
     .then((res) => res.json())
@@ -430,9 +572,11 @@ function confirmarPedido() {
           pedidoIdModificar = null;
           actualizarLista();
           // Limpiar los inputs seleccion de mesa y categoria
-          document.getElementById("mesaSelect").value = "";
+          reseteandoPorConfirmacion = true;
           document.getElementById("categoriaSelect").value = "";
+          document.getElementById("mesaSelect").value = "";
           document.getElementById("productosContainer").innerHTML = "";
+          setTimeout(() => { reseteandoPorConfirmacion = false; }, 500);
         });
       } else {
         Swal.fire({
@@ -566,23 +710,404 @@ window.modificarPedidoActivo = function(pedidoId, mesaId) {
   // Buscar el pedido en la variable global
   const pedidoObj = window.pedidosActivosGlobal[mesaId];
   if (!pedidoObj || pedidoObj.pedido_id != pedidoId) return;
-  // Cargar productos en el carrito
-  pedido = pedidoObj.productos.map(prod => ({
-    id: prod.id,
-    nombre: prod.nombre,
-    cantidad: parseInt(prod.cantidad),
-    comentario: prod.comentario,
-    precio: parseFloat(prod.precio)
-  }));
-  actualizarLista();
+
+  // Si el pedido está entregado, cargar solo productos nuevos para edición
+  if (pedidoObj.estados_idestados === 4) {
+    // Obtener solo productos nuevos usando para_edicion = true
+    fetch("../controllers/pedidos_activos_mesa.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mesa_id: mesaId, para_edicion: true })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.pedidos && data.pedidos.length > 0) {
+        // Solo cargar productos nuevos (es_producto_nuevo = 1)
+        const productos = data.pedidos[0].productos;
+        pedido = productos.map(prod => ({
+          id: prod.id,
+          nombre: prod.nombre,
+          cantidad: parseInt(prod.cantidad),
+          comentario: prod.comentario,
+          precio: parseFloat(prod.precio),
+          es_producto_nuevo: prod.es_producto_nuevo || 0
+        }));
+      } else {
+        pedido = []; // Carrito vacío si no hay productos nuevos
+      }
+      actualizarLista(pedidoObj.estados_idestados);
+    });
+  } else {
+    // Para otros estados, cargar todos los productos normalmente
+    pedido = pedidoObj.productos.map(prod => ({
+      id: prod.id,
+      nombre: prod.nombre,
+      cantidad: parseInt(prod.cantidad),
+      comentario: prod.comentario,
+      precio: parseFloat(prod.precio),
+      estado: pedidoObj.estado_nombre, // Guardar el estado textual
+      es_producto_nuevo: prod.es_producto_nuevo || 0
+    }));
+    actualizarLista(pedidoObj.estados_idestados);
+  }
+  
   // Resaltar el pedido que se está editando
   document.querySelectorAll('#pedidosActivosMesa .border').forEach(div => div.classList.remove('border-primary'));
   const divPedido = document.getElementById('pedidoActivo_' + pedidoId);
   if (divPedido) divPedido.classList.add('border-primary');
   // Seleccionar la mesa en el select
   const mesaSelect = document.getElementById('mesaSelect');
-  if (mesaSelect) mesaSelect.value = mesaId;
+  if (mesaSelect) {
+    mesaSelect.value = mesaId;
+    mesaSelect.dispatchEvent(new Event('change'));
+  }
   pedidoIdModificar = pedidoId;
+  window.estadoPedidoActual = pedidoObj.estados_idestados; // Guardar estado numérico global
+  actualizarBotonCancelarPedido(window.estadoPedidoActual);
+}
+
+// Modifico actualizarLista para deshabilitar edición si estadoPedidoActual === 4
+function actualizarLista(estadoPedido) {
+  const lista = document.getElementById("pedidoLista");
+  lista.innerHTML = "";
+  let total = 0;
+  const esEntregado = (typeof estadoPedido !== 'undefined' ? estadoPedido : window.estadoPedidoActual) === 4;
+
+  pedido.forEach((item, index) => {
+    const subtotal = item.precio * item.cantidad;
+    total += subtotal;
+    lista.innerHTML += `
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>${item.nombre}</strong>
+          ${item.es_producto_nuevo === 1 ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
+          <br>
+          <small class="text-muted">${item.comentario || "sin obs."}</small>
+          <br>
+          <small>$${item.precio.toFixed(2)} x ${item.cantidad}</small>
+        </div>
+        <div class="text-end">
+          <div class="mb-2">$${subtotal.toFixed(2)}</div>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="cambiarCantidad(${index}, -1)" ${esEntregado ? 'disabled' : ''}>-</button>
+            <button class="btn btn-sm btn-secondary" onclick="cambiarCantidad(${index}, 1)" ${esEntregado ? 'disabled' : ''}>+</button>
+            <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${index})" ${esEntregado ? 'disabled' : ''}>x</button>
+          </div>
+        </div>
+      </li>`;
+  });
+  // Agregar el total al final de la lista
+  lista.innerHTML += `
+    <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
+      <strong>Total</strong>
+      <strong>$${total.toFixed(2)}</strong>
+    </li>`;
+  if (typeof estadoPedido !== 'undefined' || typeof window.estadoPedidoActual !== 'undefined') {
+    actualizarBotonCancelarPedido(typeof estadoPedido !== 'undefined' ? estadoPedido : window.estadoPedidoActual);
+  }
+}
+
+// Modifico cambiarCantidad y eliminarProducto para advertir si es entregado
+function cambiarCantidad(index, delta) {
+  if ((window.estadoPedidoActual === 4)) {
+    Swal.fire({
+      icon: 'info',
+      title: 'No permitido',
+      text: 'No puedes modificar productos en un pedido entregado. Solo puedes agregar nuevos productos.'
+    });
+    return;
+  }
+  // Solo permitir incrementar si no supera el stock
+  if (delta > 0) {
+    const item = pedido[index];
+    if (item.stock !== undefined && item.cantidad + 1 > item.stock) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Stock insuficiente',
+        text: 'No puedes agregar más que el stock disponible.',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+  }
+  pedido[index].cantidad += delta;
+  if (pedido[index].cantidad <= 0) {
+    eliminarProducto(index);
+    return;
+  }
+  actualizarCantidadEnBD(index, pedido[index].cantidad);
+  actualizarLista();
+}
+function eliminarProducto(index) {
+  if ((window.estadoPedidoActual === 4)) {
+    Swal.fire({
+      icon: 'info',
+      title: 'No permitido',
+      text: 'No puedes eliminar productos en un pedido entregado. Solo puedes agregar nuevos productos.'
+    });
+    return;
+  }
+  actualizarCantidadEnBD(index, 0);
+  pedido.splice(index, 1);
+  actualizarLista();
+}
+
+function confirmarPedido() {
+  const mesa = document.getElementById("mesaSelect").value;
+  const mesaSelect = document.getElementById("mesaSelect");
+  const mesaNombre = mesaSelect.options[mesaSelect.selectedIndex].text;
+
+  if (!mesa) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Mesa no seleccionada',
+      text: 'Por favor, seleccione una mesa antes de confirmar el pedido.',
+    });
+    return;
+  }
+
+  if (pedido.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin productos',
+      text: 'Agrega al menos un producto al pedido.',
+    });
+    return;
+  }
+
+  // Calcular el total del pedido
+  const total = pedido.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+
+  // Crear resumen del pedido para mostrar
+  let resumenHtml = `
+    <div class="text-start">
+      <h5 class="mb-3"><i class="fas fa-chair me-2"></i>Mesa: ${mesaNombre}</h5>
+      <div class="mb-3">
+        <strong><i class="fas fa-shopping-cart me-2"></i>Productos:</strong>
+        <div class="mt-2">
+  `;
+
+  pedido.forEach(item => {
+    const subtotal = item.precio * item.cantidad;
+    resumenHtml += `
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <div>
+          <strong>${item.nombre}</strong>
+          ${item.es_producto_nuevo === 1 ? '<span class="badge bg-success ms-1">NUEVO</span>' : ''}
+          <br>
+          <small class="text-muted">${item.comentario || 'Sin observaciones'}</small>
+          <br>
+          <small class="text-info">$${item.precio.toFixed(2)} × ${item.cantidad}</small>
+        </div>
+        <div class="text-end">
+          <strong>$${subtotal.toFixed(2)}</strong>
+        </div>
+      </div>
+    `;
+  });
+
+  resumenHtml += `
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+        <strong class="fs-5"><i class="fas fa-calculator me-2"></i>Total del pedido:</strong>
+        <strong class="fs-4 text-success">$${total.toFixed(2)}</strong>
+      </div>
+    </div>
+  `;
+
+  // Mostrar resumen y confirmar
+  Swal.fire({
+    title: pedidoIdModificar ? 
+      '<i class="fas fa-edit"></i> Confirmar Modificación' : 
+      '<i class="fas fa-check"></i> Confirmar Pedido',
+    html: resumenHtml,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: pedidoIdModificar ? 
+      '<i class="fas fa-save me-2"></i>Confirmar Modificación' : 
+      '<i class="fas fa-check me-2"></i>Confirmar Pedido',
+    cancelButtonText: '<i class="fas fa-times me-2"></i>Cancelar',
+    width: '600px',
+    customClass: {
+      popup: 'swal-wide'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Proceder con la confirmación del pedido
+      enviarPedido(mesa, total);
+    }
+  });
+}
+
+// Función separada para enviar el pedido al servidor
+function enviarPedido(mesa, total) {
+  // Mostrar loading
+  Swal.fire({
+    title: 'Procesando pedido...',
+    html: 'Por favor espere mientras se procesa su pedido.',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  fetch("../controllers/confirmar_pedido.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      mesa_id: parseInt(mesa),
+      productos: pedido,
+      total: total,
+      pedido_id: pedidoIdModificar,
+      nuevo_estado: (pedidoIdModificar && window.pedidoCanceladoParaModificar) ? 2 : undefined
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        // Verificar si el pedido fue reactivado (estaba entregado)
+        const mensaje = pedidoIdModificar ? 
+          (data.message.includes('actualizado') ? 
+            'Pedido actualizado correctamente. Si estaba entregado, ahora aparecerá en la cocina.' : 
+            data.message) : 
+          data.message;
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Pedido registrado',
+          text: mensaje,
+        }).then(() => {
+          if (usuarioInteractuando()) {
+            actualizarPendiente = true;
+          } else {
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          }
+          pedido = [];
+          pedidoIdModificar = null;
+          window.estadoPedidoActual = null;
+          actualizarLista();
+          // Limpiar los inputs seleccion de mesa y categoria
+          document.getElementById("mesaSelect").value = "";
+          document.getElementById("categoriaSelect").value = "";
+          document.getElementById("productosContainer").innerHTML = "";
+          
+          // Recargar pedidos activos de la mesa si hay una seleccionada
+          const mesaSelect = document.getElementById("mesaSelect");
+          if (mesaSelect.value) {
+            mostrarPedidosActivosMesa([]);
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message,
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el pedido.',
+      });
+      console.error(error);
+    });
+}
+
+window.cancelarPedidoActual = function() {
+  if (!pedidoIdModificar) {
+    Swal.fire('No hay pedido seleccionado', 'Seleccione un pedido para cancelar.', 'info');
+    return;
+  }
+  // Solo permitir si el estado es confirmado
+  if (window.estadoPedidoActual !== 3) {
+    Swal.fire('No permitido', 'Solo se puede cancelar un pedido en estado confirmado.', 'info');
+    return;
+  }
+  Swal.fire({
+    title: '¿Cancelar pedido?',
+    text: 'Esta acción no se puede deshacer. ¿Desea cancelar el pedido actual?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../controllers/cancelar_pedido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido_id: pedidoIdModificar })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Pedido cancelado', data.message || 'El pedido ha sido cancelado.', 'success').then(() => {
+            pedido = [];
+            pedidoIdModificar = null;
+            window.estadoPedidoActual = null;
+            actualizarLista();
+            actualizarBotonCancelarPedido(null);
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          });
+        } else {
+          Swal.fire('Error', data.message || 'No se pudo cancelar el pedido.', 'error');
+        }
+      })
+      .catch(() => {
+        Swal.fire('Error', 'No se pudo cancelar el pedido.', 'error');
+      });
+    }
+  });
+}
+
+window.cancelarPedidoActivoDesdeCard = function(pedidoId, mesaId) {
+  // Buscar el pedido en la variable global
+  const pedidoObj = window.pedidosActivosGlobal[mesaId];
+  if (!pedidoObj || pedidoObj.pedido_id != pedidoId) return;
+  if (pedidoObj.estados_idestados !== 3) {
+    Swal.fire('No permitido', 'Solo se puede cancelar un pedido en estado confirmado.', 'info');
+    return;
+  }
+  Swal.fire({
+    title: '¿Cancelar pedido?',
+    text: 'Esta acción no se puede deshacer. ¿Desea cancelar el pedido actual?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch('../controllers/cancelar_pedido.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pedido_id: pedidoId })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('Pedido cancelado', data.message || 'El pedido ha sido cancelado.', 'success').then(() => {
+            actualizarSelectMesas();
+            cargarPedidosActivosGlobal();
+          });
+        } else {
+          Swal.fire('Error', data.message || 'No se pudo cancelar el pedido.', 'error');
+        }
+      })
+      .catch(() => {
+        Swal.fire('Error', 'No se pudo cancelar el pedido.', 'error');
+      });
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -795,13 +1320,18 @@ function cargarPedidosActivosGlobal() {
                     <div><strong>Pedido #:</strong> ${pedido.pedido_id}</div>
                     <div><strong>Productos:</strong><ul class='mb-1'>`;
             pedido.productos.forEach(prod => {
-              html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})</li>`;
+              const esNuevo = prod.es_producto_nuevo === 1;
+              const badgeNuevo = esNuevo ? '<span class="badge bg-success ms-1">NUEVO</span>' : '';
+              html += `<li>${prod.nombre} x${prod.cantidad} ($${parseFloat(prod.precio).toFixed(2)})${badgeNuevo}</li>`;
             });
             html += `</ul></div>
                     <div><strong>Total:</strong> $${pedido.productos.reduce((sum, p) => sum + (parseFloat(p.precio) * parseInt(p.cantidad)), 0).toFixed(2)}</div>
                     <div class="d-flex justify-content-between align-items-center mt-2">
-                      <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>Modificar pedido</button>
+                      <button class='btn btn-warning btn-sm' onclick='modificarPedidoActivo(${pedido.pedido_id}, ${pedido.mesa_id})'>
+                        ${pedido.estados_idestados === 4 ? 'Adicionar productos' : 'Modificar pedido'}
+                      </button>
                       <span class="badge bg-info text-dark ms-2">${pedido.estado_nombre || 'Desconocido'}</span>
+                      ${pedido.estados_idestados === 3 ? `<button class='btn btn-danger btn-sm ms-2' onclick='cancelarPedidoActivoDesdeCard(${pedido.pedido_id}, ${pedido.mesa_id})'><i class=\"fas fa-times me-1\"></i>Cancelar</button>` : ''}
                     </div>
                   </div>
                 </div>
@@ -868,3 +1398,25 @@ window.addEventListener('DOMContentLoaded', function() {
   mesaSelect.addEventListener('change', updateBtnCancelarToken);
   updateBtnCancelarToken();
 });
+
+// Agregar estilos CSS para el modal de resumen
+const style = document.createElement('style');
+style.textContent = `
+  .swal-wide {
+    width: 90% !important;
+    max-width: 600px !important;
+  }
+  
+  .swal2-html-container {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .swal-wide {
+      width: 95% !important;
+      margin: 10px !important;
+    }
+  }
+`;
+document.head.appendChild(style);

@@ -10,8 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'] ?? null;
 
     if ($id && $nombre) {
-        $consultas = new consultas();
-        $resultado = $consultas->editar_nombre_mesa($id, $nombre);
+        $consultas = new ConsultasMesero();
+        $resultado = $consultas->editar_nombre_mesa($nombre, $id);
         if ($resultado === 'duplicado') {
             echo json_encode(['success' => false, 'error' => 'duplicado']);
         } else {

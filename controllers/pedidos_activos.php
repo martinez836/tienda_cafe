@@ -41,6 +41,7 @@ try {
                 'pedido_id' => $pedido['idpedidos'],
                 'productos' => $detalles,
                 'estado_nombre' => $pedido['estado_nombre'],
+                'estados_idestados' => $pedido['estados_idestados'],
                 'usuario_id' => $pedido['usuarios_idusuarios']
             ];
         }

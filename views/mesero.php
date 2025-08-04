@@ -51,8 +51,9 @@ try {
         <h4 class="text-light opacity-75 mb-0">Sistema de Gestión de Pedidos</h4>
       </div>
       <div class="d-flex align-items-center gap-3">
-        <h2 class="text-light mb-0">usuario: <?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? ''); ?></h2>
-        <button id="btnCerrarSesion" class="btn btn-danger btn-lg" title="Cerrar Sesión">
+        <i class="fa-solid fa-user-check"></i>
+        <h5 class="text-light mb-0"><?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? ''); ?></h5>
+        <button id="btnCerrarSesion" class="btn btn-danger" title="Cerrar Sesión">
           <i class="fas fa-sign-out-alt"></i>
         </button>
       </div>
@@ -75,20 +76,31 @@ try {
                     $mesas && is_array($mesas)) {
                     $usuarioId = $_SESSION['usuario_id'];
                     foreach ($mesas as $mesa) {
-                        // Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
-                        if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
-                            continue;
-                        }
+                        // Comentado: Solo mostrar mesas libres (sin pedidos confirmados ni entregados)
+                        // if ($mesa['tiene_pedido_confirmado'] > 0 || $mesa['tiene_pedido_entregado'] > 0) {
+                        //     continue;
+                        // }
                         // Si la mesa tiene token activo, solo mostrarla si el token es del usuario logueado
                         if (
                             isset($mesa['token_activo']) && $mesa['token_activo'] && 
                             isset($mesa['token_usuario_id']) && $mesa['token_usuario_id'] != $usuarioId
                         ) {
                             continue;
-                        }
+                        } 
                         $token = isset($mesa['token_activo']) && $mesa['token_activo'] ? ' | Token #' . htmlspecialchars($mesa['token_activo']) : '';
                         $tokenActivo = isset($mesa['token_activo']) && $mesa['token_activo'] ? '1' : '0';
-                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . '</option>';
+                        
+                        // Agregar indicador visual del estado de la mesa
+                        $estadoMesa = '';
+                        if ($mesa['tiene_pedido_confirmado'] > 0) {
+                            $estadoMesa = ' [CONFIRMADO]';
+                        } elseif ($mesa['tiene_pedido_entregado'] > 0) {
+                            $estadoMesa = ' [ENTREGADO]';
+                        } elseif ($mesa['tiene_pedido_procesado'] > 0) {
+                            $estadoMesa = ' [PROCESADO]';
+                        }
+                        
+                        echo '<option value="' . (int)$mesa['idmesas'] . '" data-token-activo="' . $tokenActivo . '">' . htmlspecialchars($mesa['nombre']) . $token . $estadoMesa . '</option>';
                     }
                 }
                 ?>
@@ -173,6 +185,9 @@ try {
             <button class="btn btn-success w-100" onclick="confirmarPedido()">
               <i class="fas fa-check me-2"></i>Confirmar Pedido
             </button>
+            <button id="btnCancelarPedido" class="btn btn-danger w-100 mt-2 d-none" onclick="cancelarPedidoActual()">
+              <i class="fas fa-times me-2"></i>Cancelar Pedido
+            </button>
           </div>
         </div>
 
@@ -228,5 +243,19 @@ try {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../assets/js/appMesero.js"></script>
+  <script>
+    // Mostrar/ocultar el botón de cancelar pedido según el estado
+    function actualizarBotonCancelarPedido(estadoPedido) {
+      const btn = document.getElementById('btnCancelarPedido');
+      if (!btn) return;
+      if (estadoPedido === 3) {
+        btn.classList.remove('d-none');
+      } else {
+        btn.classList.add('d-none');
+      }
+    }
+    // Llamar esta función desde JS cada vez que se cargue/modifique el pedido actual
+    window.actualizarBotonCancelarPedido = actualizarBotonCancelarPedido;
+  </script>
 </body>
 </html>

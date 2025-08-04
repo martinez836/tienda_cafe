@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? null;
 
     if ($id) {
-        $consultas = new consultas();
+        $consultas = new ConsultasMesero();
         $resultado = $consultas->inactivar_mesa($id);
         echo json_encode(['success' => $resultado]);
     } else {
