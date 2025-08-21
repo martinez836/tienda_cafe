@@ -261,7 +261,7 @@ btnCrearUsuario.addEventListener('click', () => {
                                 loadUsers(); // Recargar inventario
                             } else {
                                 Swal.fire(
-                                    'Error!'+idUsuario,
+                                    'Error!',
                                     data.message || 'No se pudo eliminar el artículo.',
                                     'error'
                                 );

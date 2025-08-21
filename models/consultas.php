@@ -2,8 +2,8 @@
 
 use PHPMailer\PHPMailer\SMTP;
 
-require_once __DIR__ . '/MySQL.php';
-require_once __DIR__ . '/../config/config.php';
+require_once __DIR__. '/MySQL.php';
+require_once __DIR__. '/../config/config.php';
 
 class ConsultasMesero
 {
@@ -60,7 +60,7 @@ class ConsultasMesero
     // CATEGORIAS
     public function traerCategorias()
     {
-        $consulta = "SELECT idcategorias, nombre_categoria FROM categorias WHERE estados_idestados = 1 ORDER BY nombre_categoria;";
+        $consulta = "SELECT idcategorias, nombre_categoria,estados_idestados,estados.estado as nombreEstado  FROM categorias JOIN estados ON categorias.estados_idestados = estados.idestados  WHERE estados_idestados = 1 ORDER BY idcategorias;";
         return $this->mysql->efectuarConsulta($consulta);
     }
 
@@ -434,29 +434,6 @@ class ConsultasMesero
         $stmt = $this->mysql->ejecutarSentenciaPreparada("UPDATE mesas SET estados_idestados = 2 WHERE idmesas = ?", 'i', [$id]);
         return $stmt->rowCount() > 0;
     }
-    public function editar_nombre_mesa($nombre, $idmesas) {
-        // Verificar si ya existe una mesa activa con ese nombre (excluyendo la mesa actual)
-        $sqlCheck = "SELECT COUNT(*) as total FROM mesas WHERE nombre = ? AND estados_idestados = 1 AND idmesas != ?";
-        $paramsCheck = [$nombre, $idmesas];
-        $stmt = $this->mysql->ejecutarSentenciaPreparada($sqlCheck, 'si', $paramsCheck);
-        $row = $stmt->fetch();
-        if ($row && isset($row['total']) && $row['total'] > 0) {
-            return 'duplicado';
-        }
-        // Actualizar el nombre de la mesa
-        $sql = "UPDATE mesas SET nombre = ? WHERE idmesas = ?";
-        $params = [$nombre, $idmesas];
-        $this->mysql->ejecutarSentenciaPreparada($sql, 'si', $params);
-        return true;
-    }
-
-    // INACTIVAR MESA
-    public function inactivar_mesa($idmesas) {
-        $sql = "UPDATE mesas SET estados_idestados = 2 WHERE idmesas = ?";
-        $params = [$idmesas];
-        $this->mysql->ejecutarSentenciaPreparada($sql, 'i', $params);
-        return true;
-    }
 }
 
 ?>

@@ -1,4 +1,3 @@
-
 <?php
 require_once '../../config/admin_auth.php';
 
@@ -10,12 +9,15 @@ verificarAdmin();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - Tienda de Café</title>
-    <link href="../../assets/css/usuarios.css" rel="stylesheet">
+    <title>Gestión de Usuarios - Sistema de Café</title>
     <link rel="stylesheet" href="../../assets/cssBootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/css/usuarios.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        
+    </style>
 </head> 
 <body>
 <div class="container-fluid">
@@ -45,32 +47,37 @@ verificarAdmin();
         <ul class="nav flex-column pt-3">
             <li class="nav-item">
                 <a class="nav-link" href="dashboard.php">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    <i class="fas fa-tachometer-alt"></i>Dashboard
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active" href="usuarios.php">
-                    <i class="fas fa-users me-2"></i>Usuarios
+                    <i class="fas fa-users"></i>Usuarios
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="productos.php">
-                    <i class="fas fa-mug-hot me-2"></i>Productos
+                    <i class="fas fa-mug-hot"></i>Productos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="categorias.php">
+                    <i class="fas fa-mug-hot"></i>Categorias
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="gestion_mesas.php">
-                    <i class="fas fa-chair me-2"></i>Gestión Mesas
+                    <i class="fas fa-chair"></i>Gestión Mesas
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="pedidos.php">
-                    <i class="fas fa-receipt me-2"></i>Ventas
+                    <i class="fas fa-receipt"></i>Ventas
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="graficas.php">
-                    <i class="fas fa-chart-bar me-2"></i>Gráficas
+                    <i class="fas fa-chart-bar"></i>Gráficas
                 </a>
             </li>
         </ul>
@@ -100,13 +107,18 @@ verificarAdmin();
                     </a>
                 </li>
                 <li class="nav-item">
+                <a class="nav-link" href="categorias.php">
+                    <i class="fas fa-mug-hot"></i>Categorias
+                </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="pedidos.php">
                         <i class="fas fa-receipt me-2"></i>Ventas
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="pedidos.php">
-                        <i class="fa-solid fa-file-pdf"></i>Balance
+                        <i class="fa-solid fa-file-pdf me-2"></i>Balance
                     </a>
                 </li>
                 <li class="nav-item">
@@ -134,23 +146,28 @@ verificarAdmin();
     </div>
 
     <div class="content">
-        <h2 class="mb-4">Gestión de Usuarios</h2>
+        <h2 class="page-title">
+            <i class="fas fa-users me-3"></i>Gestión de Usuarios
+        </h2>
 
         <div class="card mb-4">
             <div class="card-header">
                 <i class="fas fa-table me-2"></i>Lista de Usuarios
             </div>
             <div class="card-body">
-                <button id="btnCrearUsuario" class="btn btn-primary mb-3 ms-2">
-                    <i class="fa-solid fa-plus me-2"></i>Crear
-                </button>
-                <button class="btn btn-success mb-3 ms-2" id="generarReporteBtn">
-                <i class="fa-solid fa-file-pdf me-2"></i>Generar Reporte PDF
-                </button>
-                <button class="btn btn-info mb-3 ms-2" id="verHistorialBtn">
-                <i class="fa-solid fa-history me-2"></i>Ver Historial
-                </button>
-                <div class="table">
+                <div class="d-flex flex-wrap btn-group-actions">
+                    <button id="btnCrearUsuario" class="btn btn-primary">
+                        <i class="fa-solid fa-plus me-2"></i>Crear Usuario
+                    </button>
+                    <button class="btn btn-success" id="generarReporteBtn">
+                        <i class="fa-solid fa-file-pdf me-2"></i>Generar Reporte PDF
+                    </button>
+                    <button class="btn btn-info" id="verHistorialBtn">
+                        <i class="fa-solid fa-history me-2"></i>Ver Historial
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
                     <table class="table table-striped table-hover" id="tablaUsuarios">
                         <thead>
                             <tr>
@@ -163,7 +180,7 @@ verificarAdmin();
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-
+                            <!-- Los datos se cargarán via JavaScript -->
                         </tbody>
                     </table>
                 </div>
@@ -171,50 +188,90 @@ verificarAdmin();
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <!-- Modal mejorado - manteniendo funcionalidad original -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioTitle" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="modalUsuarioTitle">Modal title</h1>
+                    <h1 class="modal-title fs-5" id="modalUsuarioTitle">
+                        <i class="fas fa-user me-2"></i>Gestión de Usuario
+                    </h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
                 <form id="frmUsuario">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Nombre del usuario</label>
-                                <input type="text" class="form-control" id="nombre_usuario" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email_usuario" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" id="lblContrasena" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" id="contrasena_usuario" aria-describedby="emailHelp">
-                            </div>
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">Rol</label><br>
-                                <select id="rolUsuario" class="form-select select-rol">
-                                </select>
-                            </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="nombre_usuario" class="form-label">
+                                <i class="fas fa-user me-2"></i>Nombre del usuario
+                            </label>
+                            <input type="text" class="form-control" id="nombre_usuario" placeholder="Ingrese el nombre completo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email_usuario" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email_usuario" placeholder="usuario@ejemplo.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="contrasena_usuario" id="lblContrasena" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Contraseña
+                            </label>
+                            <input type="password" class="form-control" id="contrasena_usuario" placeholder="Ingrese la contraseña">
+                        </div>
+                        <div class="mb-3">
+                            <label for="rolUsuario" class="form-label">
+                                <i class="fas fa-user-tag me-2"></i>Rol
+                            </label>
+                            <select id="rolUsuario" class="form-select select-rol">
+                                <!-- Las opciones se cargarán via JavaScript -->
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Guardar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+    <!-- Scripts originales mantenidos -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/jsBootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/appUsuario.js"></script>
+
+   <!--  <script>
+        // Mejoras adicionales de UX (opcional)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Añadir efectos de loading en botones
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        const originalHTML = this.innerHTML;
+                        this.innerHTML = '<div class="loading-coffee"></div> ' + originalHTML.split('</i>')[1] || originalHTML;
+                        setTimeout(() => {
+                            this.innerHTML = originalHTML;
+                        }, 1000);
+                    }
+                });
+            });
+
+            // Mejorar la experiencia del DataTable
+            $('#tablaUsuarios').on('init.dt', function() {
+                $('.dataTables_length select').addClass('form-select form-select-sm');
+                $('.dataTables_filter input').addClass('form-control form-control-sm');
+            });
+        });
+    </script> -->
 </body>
 </html>

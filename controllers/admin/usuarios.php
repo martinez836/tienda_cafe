@@ -60,15 +60,22 @@ try {
             }
             break;
         case 'eliminar':
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
             $id = $_POST['id'] ?? 0;
-            if(empty($id)) {
-                $response = ['success'=> false, 'message'=> 'No hay id'];
-            } else{
-                $eliminar = $consultas->eliminarUsuario( $id );
-                if($eliminar){
-                    $response = ['success'=> true, 'message'=> 'Usuario Eliminado Correctamente'];
-                }else{
-                    $response = ['success'=> false, 'message'=> 'Fallo en eliminar usuario'];
+            $idUsuarioSesion = $_SESSION['usuario_id'] ?? 0;
+
+            if (empty($id)) {
+                $response = ['success' => false, 'message' => 'No hay ID'];
+            } elseif ($id == $idUsuarioSesion) {
+                $response = ['success' => false, 'message' => 'No puedes eliminar tu propia cuenta .'];
+            } else {
+                $eliminar = $consultas->eliminarUsuario($id);
+                if ($eliminar) {
+                    $response = ['success' => true, 'message' => 'Usuario eliminado correctamente'];
+                } else {
+                    $response = ['success' => false, 'message' => 'Fallo en eliminar usuario'];
                 }
             }
             break;

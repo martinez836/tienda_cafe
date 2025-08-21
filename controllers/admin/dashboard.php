@@ -34,10 +34,18 @@ try {
             // Formatear últimos pedidos para el frontend
             $pedidosFormateados = [];
             foreach ($ultimosPedidos as $pedido) {
+                $statusNombre = 'Desconocido';
+                switch ($pedido['status_id']) {
+                    case 1: $statusNombre = 'Pendiente'; break;
+                    case 2: $statusNombre = 'Cancelado'; break;
+                    case 3: $statusNombre = 'Confirmado'; break;
+                    case 4: $statusNombre = 'Entregado'; break;
+                    case 5: $statusNombre = 'Completado'; break;
+                }
                 $pedidosFormateados[] = [
                     'id' => $pedido['idpedidos'],
                     'table' => $pedido['nombre_mesa'],
-                    'status' => ($pedido['status_id'] == 1) ? 'Activo' : (($pedido['status_id'] == 2) ? 'Inactivo' : 'Desconocido'),
+                    'status' => $statusNombre,
                 ];
             }
 
@@ -68,4 +76,4 @@ try {
 
 echo json_encode($response);
 
-?> 
+?>

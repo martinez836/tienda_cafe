@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             const dashboardData = data.data;
 
                             // Actualizar tarjetas de resumen
-                            document.querySelector('.card.bg-primary h3').textContent = (dashboardData.totalPedidos ?? 0).toLocaleString();
-                            document.querySelector('.card.bg-success h3').textContent = `$${(dashboardData.ingresosMesActual ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                            document.querySelector('.card.bg-warning h3').textContent = (dashboardData.nuevosUsuariosMesActual ?? 0).toLocaleString();
+                            document.querySelector('.metric-card.primary h3').textContent = (dashboardData.totalPedidos ?? 0).toLocaleString();
+document.querySelector('.metric-card.success h3').textContent = `$${(dashboardData.ingresosMesActual ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+document.querySelector('.metric-card.warning h3').textContent = (dashboardData.nuevosUsuariosMesActual ?? 0).toLocaleString();
 
                             // Actualizar gráfica de Ventas Diarias
                             const ventasDiarias = dashboardData.ventasDiarias ?? { labels: [], data: [] }; 
@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                             statusClass = 'bg-info';
                                         } else if (pedido.status === 'Completado') {
                                             statusClass = 'bg-success';
+                                        } else if (pedido.status === 'Cancelado') {
+                                            statusClass = 'bg-danger';
+                                        } else if (pedido.status === 'Confirmado') {
+                                            statusClass = 'bg-primary';
+                                        } else if (pedido.status === 'Entregado') {
+                                            statusClass = 'bg-warning';
                                         }
                                         li.innerHTML = `
                                             Pedido #${pedido.id} - ${pedido.table}

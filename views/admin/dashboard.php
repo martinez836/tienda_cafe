@@ -14,10 +14,13 @@ $usuario = obtenerUsuarioAdmin();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Sistema de Café</title>
     <link href="../../assets/cssBootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet"  href="../../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
     <link rel="stylesheet" href="../../assets/css/notificaciones.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
@@ -53,39 +56,44 @@ $usuario = obtenerUsuarioAdmin();
                 </ul>
             </div>
         </div>
-    </nav>
+    </nav>  
 
     <!-- Sidebar fija para escritorio -->
     <div class="sidebar d-none d-lg-block">
         <ul class="nav flex-column pt-3">
             <li class="nav-item">
                 <a class="nav-link active" href="dashboard.php">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    <i class="fas fa-tachometer-alt"></i>Dashboard
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="usuarios.php">
-                    <i class="fas fa-users me-2"></i>Usuarios
+                    <i class="fas fa-users"></i>Usuarios
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="productos.php">
-                    <i class="fas fa-mug-hot me-2"></i>Productos
+                    <i class="fas fa-mug-hot"></i>Productos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="categorias.php">
+                    <i class="fas fa-mug-hot"></i>Categorias
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="gestion_mesas.php">
-                    <i class="fas fa-chair me-2"></i>Gestión Mesas
+                    <i class="fas fa-chair"></i>Gestión Mesas
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="pedidos.php">
-                    <i class="fas fa-receipt me-2"></i>Ventas
+                    <i class="fas fa-receipt"></i>Ventas
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="graficas.php">
-                    <i class="fas fa-chart-bar me-2"></i>Gráficas
+                    <i class="fas fa-chart-bar"></i>Gráficas
                 </a>
             </li>
         </ul>
@@ -113,6 +121,11 @@ $usuario = obtenerUsuarioAdmin();
                     <a class="nav-link" href="productos.php">
                         <i class="fas fa-mug-hot me-2"></i>Productos
                     </a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="categorias.php">
+                    <i class="fas fa-mug-hot"></i>Categorias
+                </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="gestion_mesas.php">
@@ -149,94 +162,106 @@ $usuario = obtenerUsuarioAdmin();
     </div>
 
     <div class="content">
-        <h2 class="mb-4">Dashboard de Administración</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0" style="color: var(--primary-coffee); font-weight: 700;">Dashboard de Administración</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm btn-modern" onclick="location.reload()">
+                    <i class="fas fa-sync-alt me-1"></i>Actualizar
+                </button>
+            </div>
+        </div>
 
-        <div class="row">
+        <!-- Métricas principales mejoradas (manteniendo la funcionalidad original) -->
+        <div class="row mb-4">
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-primary">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h3>0</h3>
-                                <small class="text-white">Total Pedidos</small>
-                            </div>
-                            <i class="fas fa-receipt fa-3x"></i>
+                <div class="metric-card primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3>0</h3>
+                            <small>Total Pedidos</small>
                         </div>
+                        <i class="fas fa-receipt"></i>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-success">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h3>$0.00</h3>
-                                <small class="text-white">Ingresos del Mes</small>
-                            </div>
-                            <i class="fas fa-dollar-sign fa-3x"></i>
+                <div class="metric-card success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3>$0.00</h3>
+                            <small>Ingresos del Mes</small>
                         </div>
+                        <i class="fas fa-dollar-sign"></i>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-4">
-                <div class="card text-white bg-warning">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h3>0</h3>
-                                <small class="text-white">Nuevos Usuarios</small>
-                            </div>
-                            <i class="fas fa-user-plus fa-3x"></i>
+                <div class="metric-card warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3>0</h3>
+                            <small>Nuevos Usuarios</small>
                         </div>
+                        <i class="fas fa-user-plus"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Alertas de Stock -->
+        <!-- Alertas de Stock mejoradas (manteniendo funcionalidad original) -->
         <div class="row mb-4" id="alertasStock">
             <div class="col-12">
-                <div class="card border-0">
-                    <div class="card-header bg-transparent">
+                <div class="section-card">
+                    <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Alertas de Stock
+                            <i class="fas fa-exclamation-triangle me-2"></i>Estado del Inventario
                         </h5>
                     </div>
                     <div class="card-body" id="contenidoAlertasStock">
                         <div class="text-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div>
+                            <div class="loading-coffee"></div>
+                            <p class="mt-2 text-muted">Cargando alertas de stock...</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-chart-area me-2"></i>Ventas Diarias
-            </div>
-            <div class="card-body">
-                <canvas id="ventasDiariasChart"></canvas>
-            </div>
-        </div>
-
         <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            <div class="col-lg-8 mb-4">
+                <!-- Gráfico de ventas mejorado (manteniendo funcionalidad original) -->
+                <div class="section-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-area me-2"></i>Ventas Diarias
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="ventasDiariasChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <!-- Últimos pedidos mejorados (manteniendo funcionalidad original) -->
+                <div class="section-card">
                     <div class="card-header">
                         <i class="fas fa-list me-2"></i>Últimos Pedidos
                     </div>
                     <div class="card-body">
-                        <ul class="list-group" id="ultimosPedidosList"></ul>
+                        <ul class="list-group" id="ultimosPedidosList">
+                            <li class="list-group-item text-center">
+                                <div class="loading-coffee"></div>
+                                <p class="mt-2 mb-0 text-muted">Cargando pedidos...</p>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
+    <!-- Scripts originales mantenidos -->
     <script src="../../assets/jsBootstrap/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../assets/js/appDashboard.js"></script>
