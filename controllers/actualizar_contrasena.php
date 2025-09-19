@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 require_once '../config/security.php';
-require_once '../models/consultas.php';
+require_once '../models/consultasRecuperacion.php';
 require_once '../config/config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Usar la clase de consultas para validar el token
         $pdo = config::conectar();
-        $consultas = new ConsultasMesero();
+        $consultas = new consultasRecuperacion();
         $token_data = $consultas->validarTokenRecuperacion($pdo, $correo, $codigo);
 
         if ($token_data) {

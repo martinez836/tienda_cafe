@@ -1,7 +1,7 @@
 <?php
 require_once '../config/config.php';
 require_once '../config/security.php';
-require_once '../models/consultas.php';
+require_once '../models/consultasRecuperacion.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -17,7 +17,7 @@ if (isset($_GET['correo']) && isset($_GET['codigo'])) {
         
         // Usar la clase de consultas para validar el token
         $pdo = config::conectar();
-        $consultas = new ConsultasMesero();
+        $consultas = new consultasRecuperacion();
         $token_data = $consultas->validarTokenRecuperacion($pdo, $correo, $codigo);
         $token_valido = $token_data !== false;
     } catch (Exception $e) {

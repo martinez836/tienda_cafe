@@ -1,7 +1,7 @@
 <?php
-require_once '../models/consultas.php';
-require_once '../config/config.php';
-require_once '../config/security.php';
+require_once '../../models/mesero/consultas_usuario_mesa.php';
+require_once '../../config/config.php';
+require_once '../../config/security.php';
 
 header('Content-Type: application/json');
 
@@ -14,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         date_default_timezone_set('America/Bogota');
         
         $pdo = config::conectar();
-        $consultas = new ConsultasMesero();
+        $consultas = new consultas_usuario_mesa();
         $token_data = $consultas->validarToken($pdo, $token);
-        
+
         if ($token_data) {
             echo json_encode([
                 'success' => true,

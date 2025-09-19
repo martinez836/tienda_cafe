@@ -5,13 +5,8 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 require_once '../config/security.php';
-
-// Conectar a la base de datos
-$mysqli = new mysqli('localhost', 'root', '', 'bd_cafe');
-if ($mysqli->connect_error) {
-    echo json_encode(['success' => false, 'message' => 'Conexión fallida']);
-    exit;
-}
+require_once '../config/config.php';
+require_once '../models/consultasRecuperacion.php';
 
 // Requiere PHPMailer
 require '../vendor/autoload.php';
@@ -31,20 +26,19 @@ try {
     // Sanitizar y validar el correo
     $correo = SecurityUtils::sanitizeEmail($data['correo']);
 
-    // Verifica si el correo existe en la tabla usuarios
-    $stmt = $mysqli->prepare("SELECT * FROM usuarios WHERE email_usuario = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
+    // Conectar a la base de datos usando el modelo
+    $pdo = config::conectar();
+    $consultas = new consultasRecuperacion();
 
-    if ($resultado->num_rows > 0) {
+    // Verificar si el correo existe usando el modelo
+    $usuario = $consultas->verificarCorreoExiste($pdo, $correo);
+
+    if ($usuario) {
         // Generar un código de recuperación aleatorio
         $codigo = bin2hex(random_bytes(5));
 
-        // Guardar el código y el correo en la tabla de recuperación
-        $stmt = $mysqli->prepare("INSERT INTO recuperacion (correo_recuperacion, codigo_recuperacion) VALUES (?, ?)");
-        $stmt->bind_param("ss", $correo, $codigo);
-        $stmt->execute();
+        // Guardar el código y el correo en la tabla de recuperación usando el modelo
+        $consultas->guardarCodigoRecuperacion($pdo, $correo, $codigo);
 
         // Crear el enlace de recuperación (ajusta la ruta a tu sistema)
         $enlace = "http://localhost/tienda_cafe/views/nuevaContrasena.php?correo=" . urlencode($correo) . "&codigo=" . $codigo;

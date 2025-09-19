@@ -1,7 +1,7 @@
 <?php
-require_once '../models/consultas.php';
-require_once '../config/config.php';
-require_once '../config/security.php';
+require_once '../../models/mesero/consultas_mesero.php';
+require_once '../../config/config.php';
+require_once '../../config/security.php';
 // Inicio de sesión
 session_name('cafe_session');
 session_start();
@@ -19,9 +19,8 @@ try {
         // Cancelar token por ID
         if (isset($_POST['cancelar_token'])) {
             $idtoken = SecurityUtils::sanitizeId($_POST['cancelar_token'], 'ID del token');
-            $pdo = config::conectar();
-            $consultas = new ConsultasMesero();
-            $consultas->cancelarTokenPorId($pdo, $idtoken);
+            $consultas = new consultas_mesero();
+            $consultas->cancelarTokenPorId($idtoken);
             echo json_encode(['success' => true, 'message' => 'Token cancelado']);
             exit;
         }
@@ -29,18 +28,16 @@ try {
         // Cancelar token por valor
         if (isset($_POST['cancelar_token_por_valor'])) {
             $token = SecurityUtils::sanitizeToken($_POST['cancelar_token_por_valor']);
-            $pdo = config::conectar();
-            $consultas = new ConsultasMesero();
-            $consultas->cancelarTokenPorValor($pdo, $token);
+            $consultas = new consultas_mesero();
+            $consultas->cancelarTokenPorValor($token);
             echo json_encode(['success' => true, 'message' => 'Token cancelado']);
             exit;
         }
 
         // Obtener tokens activos
         if (isset($_POST['activos'])) {
-            $pdo = config::conectar();
-            $consultas = new ConsultasMesero();
-            $tokens = $consultas->traerTokensActivos($pdo);
+            $consultas = new consultas_mesero();
+            $tokens = $consultas->traerTokensActivos();
             echo json_encode(['success' => true, 'tokens' => $tokens]);
             exit;
         }
@@ -72,8 +69,7 @@ try {
         throw new Exception('Mesa no especificada');
     }
 
-    $pdo = config::conectar();
-    $consultas = new ConsultasMesero();
+    $consultas = new consultas_mesero();
 
     // Usar el usuario de la sesión
     if (!isset($_SESSION['usuario_id'])) {
@@ -84,12 +80,11 @@ try {
     // Generar token de 4 dígitos
     $token = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
-    // Tiempo de expiración: 15 minutos desde ahora
+    // Tiempo de expiración: 30 minutos desde ahora
     $expiracion = date('Y-m-d H:i:s', strtotime('+30 minutes'));
 
     // Usar función del modelo para insertar el token
-    $consultas = new ConsultasMesero();
-    $consultas->insertarTokenMesa($pdo, $token, $expiracion, $mesa_id, $usuario_id);
+    $consultas->insertarTokenMesa($token, $expiracion, $mesa_id, $usuario_id);
 
     echo json_encode(['success' => true, 'token' => $token, 'expira' => $expiracion]);
 } catch (Exception $e) {

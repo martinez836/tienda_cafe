@@ -36,6 +36,17 @@ class MySql
         }
     }
 
+    // Método para ejecutar sentencias preparadas
+    public function ejecutarSentenciaPreparada2($sql, $parametros = []) {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($parametros);
+            return $stmt;
+        } catch (PDOException $e) {
+            throw new Exception("Error en la sentencia preparada: " . $e->getMessage());
+        }
+    }
+
     // Método para obtener el último ID insertado
     public function obtenerUltimoId() {
         return $this->pdo->lastInsertId();

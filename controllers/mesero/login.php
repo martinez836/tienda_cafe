@@ -60,7 +60,7 @@ try {
                 $redirect = '../views/cocina.php';
                 break;
             case 'Mesero':
-                $redirect = '../views/mesero/mesero.php';
+                $redirect = '../views/mesero.php';
                 break;
             // No incluir Mesero aquí
         }
