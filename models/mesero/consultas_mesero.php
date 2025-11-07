@@ -456,7 +456,7 @@ class consultas_mesero {
 
     // TOKENS: Traer tokens activos
     public function traerTokensActivos() {
-        $query = "SELECT t.token, t.fecha_hora_generacion, t.fecha_hora_expiracion, t.estado_token, m.nombre as mesa_nombre, m.idmesas FROM tokens_mesa t JOIN mesas m ON t.mesas_idmesas = m.idmesas WHERE t.estado_token = 'activo' AND t.fecha_hora_expiracion > NOW() ORDER BY t.fecha_hora_generacion DESC";
+        $query = "SELECT t.idtoken_mesa, t.token, t.fecha_hora_generacion, t.fecha_hora_expiracion, t.estado_token, m.nombre as mesa_nombre, m.idmesas FROM tokens_mesa t JOIN mesas m ON t.mesas_idmesas = m.idmesas WHERE t.estado_token = 'activo' AND t.fecha_hora_expiracion > NOW() ORDER BY t.fecha_hora_generacion DESC";
         try {
             return $this->mysql->efectuarConsulta($query);
         } catch (Exception $e) {
