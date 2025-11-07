@@ -6,7 +6,7 @@
     <title>Pedido de Mesa</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="../assets/css/estiloMesero.css" />
+    <link rel="stylesheet" href="../../assets/css/estiloMesero.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-coffee">
@@ -98,36 +98,58 @@
         </div>
     </div>
 
-    <!-- Modal de Observaciones -->
-    <div class="modal fade" id="modalObservaciones" tabindex="-1" aria-labelledby="modalObservacionesLabel" aria-hidden="true">
+    <!-- Modal de Observación -->
+    <div class="modal fade" id="observacionModal" tabindex="-1" aria-labelledby="observacionModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalObservacionesLabel">Agregar Observaciones</h5>
+                    <h5 class="modal-title" id="observacionModalLabel">Agregar Observaciones</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Producto:</label>
-                        <p id="productoNombreSeleccionado" class="form-control-static"></p>
+                        <p id="productoNombreSeleccionado" class="form-control-static fw-bold"></p>
                     </div>
+                    
+                    <!-- Control de Cantidad -->
                     <div class="mb-3">
-                        <label class="form-label">Cantidad:</label>
-                        <p id="productoCantidadSeleccionada" class="form-control-static"></p>
+                        <label for="cantidadInput" class="form-label">Cantidad:</label>
+                        <div class="input-group" style="max-width: 150px;">
+                            <button class="btn btn-outline-secondary" type="button" id="btnMenosCantidad">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="cantidadInput" value="1" min="1" max="99">
+                            <button class="btn btn-outline-secondary" type="button" id="btnMasCantidad">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Stock disponible: <span id="stockDisponible">0</span></small>
                     </div>
+                    
+                    <!-- Precio Total -->
                     <div class="mb-3">
-                        <label class="form-label">Precio:</label>
-                        <p id="productoPrecioSeleccionado" class="form-control-static"></p>
+                        <label class="form-label">Precio total:</label>
+                        <p class="fw-bold text-success mb-0" id="precioTotal">$0</p>
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="observaciones" class="form-label">Observaciones:</label>
-                        <textarea class="form-control" id="observaciones" rows="3" placeholder="Ingrese observaciones del producto..."></textarea>
+                        <label for="comentarioInput" class="form-label">Observaciones:</label>
+                        <textarea class="form-control" id="comentarioInput" rows="3" maxlength="255" 
+                                  placeholder="Ingrese observaciones del producto (máx. 255 caracteres)..."
+                                  oninput="validarObservaciones(this)"></textarea>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Solo se permiten letras, números, espacios y signos básicos de puntuación</small>
+                            <small class="text-muted"><span id="contadorCaracteres">0</span>/255</small>
+                        </div>
+                        <div id="errorObservaciones" class="text-danger small d-none"></div>
                     </div>
-                    <input type="hidden" id="productoId">
+                    <input type="hidden" id="productoSeleccionado">
+                    <input type="hidden" id="precioUnitario">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="agregarProductoAlPedido()">Agregar al Pedido</button>
+                    <button type="button" id="btnAgregarAlPedido" class="btn btn-primary">Agregar al Pedido</button>
                 </div>
             </div>
         </div>
@@ -135,6 +157,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../assets/js/appUsuarioMesa.js"></script>
+    <script src="../../assets/js/usuario_mesa.js"></script>
 </body>
 </html> 

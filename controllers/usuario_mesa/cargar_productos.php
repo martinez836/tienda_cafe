@@ -1,16 +1,20 @@
 <?php
-require_once '../models/consultas.php';
-require_once '../config/security.php';
+require_once '../../models/mesero/consultas_usuario_mesa.php';
+require_once '../../config/security.php';
 header('Content-Type: application/json');
 
 try {
+    // Leer datos JSON del body
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!$data) {
+        throw new Exception('Datos JSON inválidos');
+    }
     // Validar campo requerido
-    SecurityUtils::validateRequiredKeys($_POST, ['idcategorias']);
-    
+    SecurityUtils::validateRequiredKeys($data, ['idcategorias']);
     // Sanitizar y validar entrada
-    $categoria = SecurityUtils::sanitizeId($_POST['idcategorias'], 'ID de categoría');
+    $categoria = SecurityUtils::sanitizeId($data['idcategorias'], 'ID de categoría');
     
-    $consultas = new ConsultasMesero();
+    $consultas = new consultas_usuario_mesa();
     $productos = $consultas->traer_productos_por_categoria($categoria);
     
     if (!$productos || $productos->rowCount() === 0) {

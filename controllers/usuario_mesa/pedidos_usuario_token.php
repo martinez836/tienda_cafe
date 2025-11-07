@@ -1,7 +1,8 @@
 <?php
-require_once '../models/consultas.php';
-require_once '../config/config.php';
-require_once '../config/security.php';
+
+require_once '../../models/mesero/consultas_mesero.php';
+require_once '../../config/config.php';
+require_once '../../config/security.php';
 
 header('Content-Type: application/json');
 
@@ -12,28 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Validar que los datos JSON sean válidos
         $data = SecurityUtils::sanitizeJsonData($data);
         
-        // Validar campo requerido
-        SecurityUtils::validateRequiredKeys($data, ['mesa_id']);
+        // Validar campos requeridos
+        SecurityUtils::validateRequiredKeys($data, ['mesa_id', 'token']);
         
-        // Sanitizar entrada
+        // Sanitizar entradas
         $mesa_id = SecurityUtils::sanitizeId($data['mesa_id'], 'ID de mesa');
-        
-        // Verificar si se solicita para edición
-        $para_edicion = isset($data['para_edicion']) ? (bool)$data['para_edicion'] : false;
+        $token = SecurityUtils::sanitizeToken($data['token']);
         
         $pdo = config::conectar();
-        $consultas = new ConsultasMesero();
-        $pedidos = $consultas->traerPedidosActivosPorMesa($pdo, $mesa_id);
+        $consultas = new consultas_mesero();
+        $pedidos = $consultas->traerPedidosPorMesaYToken($pdo, $mesa_id, $token);
         $resultado = [];
         
         foreach ($pedidos as $pedido) {
-            // Usar la función correcta según el contexto
-            if ($para_edicion) {
-                $productos = $consultas->traerDetallePedidoParaEdicion($pdo, $pedido['idpedidos']);
-            } else {
-                $productos = $consultas->traerDetallePedido($pdo, $pedido['idpedidos']);
-            }
-            
+            $productos = $consultas->traerDetallePedido($pdo, $pedido['idpedidos']);
             $resultado[] = [
                 'pedido_id' => (int)$pedido['idpedidos'],
                 'fecha_hora' => SecurityUtils::escapeHtml($pedido['fecha_hora_pedido']),
@@ -45,12 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         echo json_encode([
             'success' => true,
-            'pedidos' => $resultado
+            'pedidos' => $resultado,
+            'debug' => [
+                'mesa_id' => $mesa_id,
+                'token' => SecurityUtils::escapeHtml($token),
+                'pedidos_encontrados' => count($resultado)
+            ]
         ]);
+        
     } catch (Exception $e) {
         echo json_encode([
             'success' => false,
-            'message' => 'Error al cargar los pedidos activos: ' . $e->getMessage()
+            'message' => 'Error al cargar los pedidos del usuario: ' . $e->getMessage()
         ]);
     }
 } else {

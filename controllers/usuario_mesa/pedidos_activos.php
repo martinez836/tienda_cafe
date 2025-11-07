@@ -1,12 +1,12 @@
 <?php
-require_once '../models/consultas.php';
-require_once '../config/config.php';
+require_once '../../models/mesero/consultas_usuario_mesa.php';
+require_once '../../config/config.php';
 
 header('Content-Type: application/json');
 
 try {
     $pdo = config::conectar();
-    $consultas = new ConsultasMesero();
+    $consultas = new consultas_usuario_mesa();
     
     // Obtener todas las mesas
     $mesas = $pdo->query("SELECT idmesas, nombre FROM mesas")->fetchAll(PDO::FETCH_ASSOC);

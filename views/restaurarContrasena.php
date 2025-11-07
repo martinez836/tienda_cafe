@@ -1,5 +1,5 @@
 <?php
-require_once '../models/consultas.php';
+require_once '../models/consultasRecuperacion.php';
 require_once '../config/config.php';
 
 ?>
