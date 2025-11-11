@@ -1,6 +1,6 @@
 <?php
 require_once '../config/admin_controller_auth.php';
-require_once '../models/consultas.php';
+require_once '../models/consultasMesa.php';
 
 // Verificar que el usuario sea administrador
 verificarAdminController();
@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'] ?? null;
 
     if ($nombre) {
-        $consultas = new ConsultasMesero();
+        $consultas = new ConsultasMesa();
         $resultado = $consultas->agregar_mesa($nombre);
         if ($resultado === 'duplicado') {
             echo json_encode(['success' => false, 'error' => 'duplicado']);

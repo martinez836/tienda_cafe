@@ -23,7 +23,7 @@ function validarToken() {
         return;
     }
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/validar_token.php', {
+    fetch('../../controllers/usuario_mesa/validar_token.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'token=' + encodeURIComponent(token)
@@ -58,7 +58,7 @@ function validarToken() {
 function cargarPedidosActivos() {
     if (!mesaId) return;
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/pedidos_activos.php')
+    fetch('../../controllers/usuario_mesa/pedidos_activos.php')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -123,7 +123,7 @@ function cargarProductos(idcategoria) {
     const body = JSON.stringify({ idcategorias: idcategoria });
     console.log('Enviando body:', body);
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/cargar_productos.php', {
+    fetch('../../controllers/usuario_mesa/cargar_productos.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: body
@@ -318,7 +318,7 @@ function confirmarPedido() {
         Swal.fire('Error', 'No hay productos en el pedido', 'error');
         return;
     }
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/confirmar_pedido.php', {
+    fetch('../../controllers/usuario_mesa/confirmar_pedido.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mesa_id: mesaId, productos: pedido.productos, token: tokenMesa })
@@ -371,7 +371,7 @@ function cargarResumenCompletoDelUsuario() {
 
     console.log('Cargando resumen completo para mesa:', mesaId, 'token:', tokenMesa);
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/pedidos_usuario_token.php', {
+    fetch('../../controllers/usuario_mesa/pedidos_usuario_token.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mesa_id: mesaId, token: tokenMesa })
@@ -534,7 +534,7 @@ function cargarTodosLosProductosDelUsuario() {
     pedido.productos = [];
     pedido.total = 0;
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/pedidos_usuario_token.php', {
+    fetch('../../controllers/usuario_mesa/pedidos_usuario_token.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mesa_id: mesaId, token: tokenMesa })
@@ -634,7 +634,7 @@ function mostrarHistorialPedidos(pedidos) {
 function cargarPedidosActivosMesa() {
     if (!mesaId) return;
 
-    fetch('/cafe_refactorizado/controllers/usuario_mesa/pedidos_activos_mesa.php', {
+    fetch('../../controllers/usuario_mesa/pedidos_activos_mesa.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mesa_id: mesaId })

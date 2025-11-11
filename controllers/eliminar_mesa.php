@@ -1,6 +1,6 @@
 <?php
 require_once '../config/admin_controller_auth.php';
-require_once '../models/consultas.php';
+require_once '../models/consultasMesa.php';
 
 // Verificar que el usuario sea administrador
 verificarAdminController();
@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? null;
 
     if ($id) {
-        $consultas = new ConsultasMesero();
+        $consultas = new ConsultasMesa();
         $resultado = $consultas->inactivar_mesa($id);
         echo json_encode(['success' => $resultado]);
     } else {

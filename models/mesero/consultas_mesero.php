@@ -80,10 +80,10 @@ class consultas_mesero {
                 p.nombre_producto,
                 p.precio_producto,
                 p.stock_producto,
-                p.tipo_productos_idtipo_productos,
+                p.tipo_producto_idtipo_producto,
                 tp.nombre_tipo
             FROM productos p
-            INNER JOIN tipo_productos tp ON p.tipo_productos_idtipo_productos = tp.idtipo_productos
+            INNER JOIN tipo_producto tp ON p.tipo_producto_idtipo_producto = tp.idtipo_producto
             WHERE p.fk_categoria = ? 
             AND p.estados_idestados = 1
             ORDER BY p.nombre_producto";
@@ -196,7 +196,7 @@ class consultas_mesero {
             UPDATE productos 
             SET stock_producto = stock_producto - ? 
             WHERE idproductos = ? 
-            AND tipo_productos_idtipo_productos = 2"; // 2 con stock - 1 sin stock
+            AND tipo_producto_idtipo_producto = 2"; // 2 con stock - 1 sin stock
 
         try {
             $this->mysql->ejecutarSentenciaPreparada2($query, [$cantidadVendida, $productoId]);
@@ -305,7 +305,7 @@ class consultas_mesero {
         $query = "
             SELECT 
                 p.stock_producto,
-                p.tipo_productos_idtipo_productos,
+                p.tipo_producto_idtipo_producto,
                 p.nombre_producto
             FROM productos p
             WHERE p.idproductos = ? AND p.estados_idestados = 1";
@@ -320,7 +320,7 @@ class consultas_mesero {
             $producto = $result[0];
 
             // Si es producto con stock (tipo 2), validar cantidad
-            if ($producto['tipo_productos_idtipo_productos'] == 2) {
+            if ($producto['tipo_producto_idtipo_producto'] == 2) {
                 if ($producto['stock_producto'] < $cantidadSolicitada) {
                     throw new Exception("Stock insuficiente para " . $producto['nombre_producto'] .
                         ". Disponible: " . $producto['stock_producto']);

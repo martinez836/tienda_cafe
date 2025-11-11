@@ -1,6 +1,6 @@
 <?php
 require_once '../../config/admin_controller_auth.php';
-require_once '../../models/consultas.php';
+require_once '../../models/mesero/consultas_mesero.php';
 require_once '../../models/consultasCategoria.php';
 
 // Verificar que el usuario sea administrador
@@ -9,7 +9,7 @@ verificarAdminController();
 header('Content-Type: application/json');
 
 $action = $_GET['action'] ?? '';
-$consultasGenerales = new ConsultasMesero();
+$consultasGenerales = new consultas_mesero();
 $consultas = new consultasCategoria();
 
 try {

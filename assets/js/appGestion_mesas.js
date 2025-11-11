@@ -36,7 +36,7 @@ function detenerActualizacionAutomatica() {
 }
 
 const llenarTablaMesas = () =>{
-    fetch('../../controllers/cargar_mesas.php')
+    fetch('../../controllers/mesas.php')
     .then(response => {
         if (!response.ok) {
             throw new Error('Error en la Peticion: ' + response.statusText);

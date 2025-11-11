@@ -1,8 +1,8 @@
 <?php
-require_once '../models/consultas.php';
+require_once '../models/mesero/consultas_mesero.php';
 header('Content-Type: application/json');
 try {
-    $consultas = new ConsultasMesero();
+    $consultas = new consultas_mesero();
     $mesas = $consultas->traerMesas();
     echo json_encode([
         'success' => true,

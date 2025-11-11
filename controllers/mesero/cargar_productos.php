@@ -41,7 +41,7 @@ try {
         $disabled = "";
         
         // Verificar si el producto maneja stock
-        if ($producto['tipo_productos_idtipo_productos'] == 2) { // Con stock
+        if ($producto['tipo_producto_idtipo_producto'] == 2) { // Con stock
             if ($producto['stock_producto'] <= 0) {
                 $stockInfo = '<span class="badge bg-danger">Agotado</span>';
                 $stockClass = "card-agotado";
@@ -69,7 +69,7 @@ try {
                             data-product-name="' . htmlspecialchars($producto['nombre_producto']) . '"
                             data-product-price="' . $producto['precio_producto'] . '"
                             data-product-stock="' . ($producto['stock_producto'] ?? 'ilimitado') . '"
-                            data-product-type="' . $producto['tipo_productos_idtipo_productos'] . '"
+                            data-product-type="' . $producto['tipo_producto_idtipo_producto'] . '"
                             ' . $disabled . '>
                             <i class="fas fa-plus me-1"></i>Agregar
                         </button>
