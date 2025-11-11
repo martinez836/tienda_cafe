@@ -143,7 +143,7 @@ function cargarProductos(idcategoria) {
                     const nombre = card.querySelector('h5').textContent.trim();
                     const precio = parseFloat(this.getAttribute('data-precio'));
                     const input = card.querySelector('input[type=number]');
-                    const cantidad = parseInt(input.value);
+                    /* const cantidad = parseInt(input.value); */
                     // Validar stock
                     const stockBadge = card.querySelector('.badge.bg-secondary');
                     let stock = null;
@@ -151,14 +151,14 @@ function cargarProductos(idcategoria) {
                         const match = stockBadge.textContent.match(/Stock:\s*(\d+)/);
                         if (match) stock = parseInt(match[1]);
                     }
-                    if (stock !== null && cantidad > stock) {
+                    /* if (stock !== null && cantidad > stock) {
                         Swal.fire('Cantidad inválida', 'No puedes agregar más que el stock disponible.', 'warning');
                         return;
-                    }
-                    if (!cantidad || cantidad <= 0) {
+                    } */
+/*                     if (!cantidad || cantidad <= 0) {
                         Swal.fire('Cantidad inválida', 'Ingrese una cantidad válida', 'warning');
                         return;
-                    }
+                    } */
 
                     // Actualizar el modal con los datos del producto
                     document.getElementById('productoNombreSeleccionado').textContent = nombre;

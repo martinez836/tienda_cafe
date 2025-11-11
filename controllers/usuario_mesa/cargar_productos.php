@@ -46,7 +46,7 @@ try {
         
         if ($stock === null || $stock > 0) {
             $html .= '<div class="input-group mb-3">
-                <input type="number" class="form-control" min="1" value="1">
+                
                 <button class="btn btn-primary" data-precio="' . $precio . '">
                     Agregar
                 </button>

@@ -58,13 +58,13 @@ verificarAdmin();
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="gestion_mesas.php">
-                    <i class="fas fa-chair me-2"></i>Gestión Mesas
+                <a class="nav-link active" href="categorias.php">
+                    <i class="fas fa-chair me-2"></i>Categorias
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="categorias.php">
-                    <i class="fas fa-chair me-2"></i>Categorias
+                <a class="nav-link active" href="gestion_mesas.php">
+                    <i class="fas fa-chair me-2"></i>Gestión Mesas
                 </a>
             </li>
             <li class="nav-item">
